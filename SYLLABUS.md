@@ -68,13 +68,15 @@ Deploy = base64 the wasm, `PUT /functions/manage/<cache>/hello`, expect 204.
 > `{"message":"Hello <name>"}` using `Json<T>` for request and response.
 > Redeploy and test with my name."
 
-**Two traps you will hit:**
+**Two traps to know about:**
 - Inlining base64 in the curl command → `Argument list too long`. Write the
   JSON body to a temp file, use `--data-binary @file`.
-- `echo '{"name":"x"}'` appends a newline → 400 *trailing characters*. Use
-  `printf '%s'` or a file.
+- Older runtimes rejected the trailing newline `echo '{"name":"x"}'` appends
+  (400 *trailing characters*); current guest crates accept it, but
+  `printf '%s'` or a file is still the safe habit.
 
-*Expect: build ~0.7 s, deploy ~250 ms, invoke ~230 ms.*
+*Expect: build ~0.7 s, deploy ~250 ms, first invoke ~100–250 ms, warm
+invokes ~15–20 ms.*
 
 ---
 

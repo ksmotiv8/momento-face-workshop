@@ -3,13 +3,19 @@
 Test data for the recognition pipeline:
 
 - `portraits/` - one photo per identity. Used to BUILD the face library
-  (Module 2). Filenames become the identity names.
+  (Module 2). Filenames become the identity names: strip the extension
+  and replace underscores with spaces (`Barack_Obama.jpg` -> the name
+  "Barack Obama"). Apply that normalization in your builder or your
+  names will not match the shipped library's.
 - `probes/` - photos used to TEST the deployed function (Module 3):
   second photos of library identities (genuine pairs), multi-face photos,
   and strangers who should stay unmatched.
 - `faces-library.json` - a prebuilt embeddings library for the 5
   portraits (512-D vectors from the w600k_mbf model, L2-normalized,
-  ~31 KB). Two uses: PUT it straight to your cache to unblock Module 3
+  ~31 KB). Schema: a bare JSON array (no wrapper object) of entries
+  `{"name": "First Last", "e": [512 floats]}` - names use spaces, per
+  the filename normalization above. Two uses: PUT it straight to your
+  cache to unblock Module 3
   without finishing Module 2, or diff it against your own `build` output
   to verify your pipeline. Caveat: embeddings only compare if your
   preprocessing matches the skill's recipe exactly (RGB, +25% square

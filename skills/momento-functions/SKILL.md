@@ -237,9 +237,10 @@ the field name first.
 
 - Deploy payloads of at least 33 MiB work - embedding a multi-MB ML model
   in the wasm via `include_bytes!` is a viable pattern.
-- Invoking `Json<T>` handlers: `echo '{"name":"x"}'` appends a newline and
-  the deserializer rejects it with 400 "trailing characters". Build JSON
-  bodies with `printf '%s'` or a file.
+- Invoking `Json<T>` handlers: older runtimes rejected trailing newlines
+  (`echo` appends one) with 400 "trailing characters"; current guest
+  crates (0.26+) accept them. `printf '%s'` or a file is still the safe
+  habit for JSON bodies.
 - The edit-build-deploy loop is ~30 seconds; iterate freely.
 - DELETE on the manage URL is not supported (405). Re-PUT to replace a
   function; removal goes through the CLI/console.

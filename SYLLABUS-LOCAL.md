@@ -16,7 +16,8 @@ matching.
 Docker (for Valkey) · ffmpeg · the two models (README step 5) · skills
 installed (README step 4).
 
-Core track: Modules 0-4 and 6, about 3.5 hours. Module 5 is optional.
+Core track: Modules 0-4, 6, and 7, about 4.25 hours. Module 5 is
+optional; Module 8 is a recommended 30-minute wrap-up.
 
 ---
 
@@ -49,14 +50,23 @@ deploy loop teaches the platform in 30 minutes.
 
 ## Module 2 — Face pipeline, native (60 min)
 
-Identical to the main track Module 2: shared `facecore` crate, `libbuild`
-CLI, threshold calibration with `faces/portraits` and `faces/probes`.
-Native-only differences worth enjoying: model load is ~50 ms and each
-embedding ~30 ms - no cold starts, no memory budget, full-size detection
-planes.
+Same as the main track Module 2, exercises 2a and 2b, with two scope
+notes: use the shipped `faces/` directories for 2b (skip the main
+track's photo-download note - this repo already ships portraits and
+probes), and ignore main-track exercise 3c and its `DETECT_PLANE`
+expectations - those are wasm-function behavior; native detection runs
+full-size planes by default and will find more faces than the wasm
+numbers suggest. Native differences worth enjoying: model load is
+~50 ms and each embedding ~30 ms - no cold starts, no memory budget,
+full-size detection planes.
 
-The shipped `faces/faces-library.json` is your answer key: your `build`
-output should match it closely (same model, same preprocessing).
+The shipped `faces/faces-library.json` is a sanity reference, not an
+answer key. Internally consistent scores are what matter: check that your
+same-person cosines sit well above your cross-person cosines. Your
+embeddings will only match the shipped file exactly if your crop and
+resize path matches the recipe byte for byte - see the caveat in
+`faces/README.md`. Separation, not equality with the shipped file, is
+the check.
 
 ---
 
@@ -75,6 +85,12 @@ FT.SEARCH faces "*=>[KNN 3 @v $q AS dist]" PARAMS 2 q <packed-query>
 
 (Verified against valkey-bundle: querying with a library vector returns
 its own entry at dist ~0.0000 and the nearest impostor at ~0.86.)
+
+Client note: if you talk to valkey from Rust, pin the `redis` crate
+version in Cargo.toml and write against that version's API. The `Value`
+enum variants were renamed across releases (0.27 uses
+`Value::BulkString`; older examples on the web use `Value::Data`), so
+copy-pasted snippets may not compile against your pinned version.
 
 **Exercise 3a — load the index**
 > **Prompt:** "Write a `libbuild index` subcommand that loads

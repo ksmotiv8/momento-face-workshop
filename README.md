@@ -26,7 +26,7 @@ Two tracks share this repo:
 - **Local track** (`SYLLABUS-LOCAL.md`): one hello-world Function for the
   serverless taste, then recognition runs natively and a local Valkey
   indexes the embeddings (real KNN vector search instead of brute force).
-  Simpler, faster (~3.5 hours), and it teaches the vector-index lesson
+  Simpler, faster (~4.25 hours), and it teaches the vector-index lesson
   the full track only mentions. Needs Docker for Valkey.
 
 ```
@@ -119,15 +119,19 @@ hard way.
 ### 5. Download the models
 
 The two ML models are not in this repo (size and licensing). Download them
-once into the crate directory the agent creates in Module 2:
+once into a stable `models/` directory now; the crate the agent creates in
+Module 2 will reference them from there (e.g. `../models/`), so they
+survive any later restructuring:
 
 ```bash
+mkdir -p models
+
 # SeetaFace frontal detector (~1.2 MB)
-curl -L -o seeta_fd_frontal_v1.0.bin \
+curl -L -o models/seeta_fd_frontal_v1.0.bin \
   https://github.com/atomashpolskiy/rustface/raw/master/model/seeta_fd_frontal_v1.0.bin
 
 # w600k_mbf ArcFace embedder (~13.6 MB, InsightFace buffalo_s pack)
-curl -L -o w600k_mbf.onnx \
+curl -L -o models/w600k_mbf.onnx \
   https://huggingface.co/immich-app/buffalo_s/resolve/main/recognition/model.onnx
 ```
 
@@ -152,10 +156,12 @@ Or hand it to the agent (the Module 0 prompt):
 
 ### 7. Run the workshop
 
-Open `SYLLABUS.md` and work through the modules in order, pasting each
-prompt into your agent. `PROMPTS.md` has all the prompts in one place.
-Every module ends with checks, so you always know your build works before
-moving on.
+Open the syllabus for the track you chose above (`SYLLABUS.md` for the
+full serverless track, `SYLLABUS-LOCAL.md` for the local track) and work
+through the modules in order, pasting each prompt into your agent.
+`PROMPTS.md` collects the main-track prompts in one place; local-track
+prompts live inline in `SYLLABUS-LOCAL.md`. Every module ends with
+checks, so you always know your build works before moving on.
 
 | Module | What you build | Time |
 |---|---|---|

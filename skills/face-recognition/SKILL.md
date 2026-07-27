@@ -408,9 +408,11 @@ Triage:
 | Library entry | ~6 KB JSON per person |
 | Latency scaling | roughly linear per face (~360 ms/face at a 512 plane; the embedding pass dominates) |
 
-Cache the parsed detector model the same way as the embedder (`OnceLock`);
-re-parsing per invoke is cheap but pointless, and consistency keeps the
-warm path predictable.
+The rustface `Detector` is stateful (`detect` takes `&mut self`) and
+cannot be cached in a `OnceLock` the way the embedder plan is. Cache the
+parsed `rustface::Model` (it is `Clone`) in a `OnceLock` and construct a
+detector from it per call - model parsing is the expensive part;
+detector construction is cheap.
 
 ## Going further
 

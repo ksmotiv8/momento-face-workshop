@@ -80,6 +80,8 @@ Non-negotiables:
 - `-http_persistent 1` is REQUIRED. ffmpeg's connection-per-request HTTPS
   path dies mid-upload against the API (TLS broken pipe), and on some
   paths failures are silent. One persistent connection is reliable.
+  (If your ffmpeg cannot reach the endpoint at all, see the static-build
+  fallback below before debugging the network.)
 - Cap the bitrate (`-b:v 1500k -maxrate 1800k -bufsize 3600k` at 720p) so
   segments respect the 1 MiB item limit. Uncapped 720p produces ~1.2 MB
   segments that never land.
@@ -91,8 +93,12 @@ Non-negotiables:
   downstream time alignment (metadata overlays, latency measurement).
 
 Fallback when ffmpeg cannot PUT HTTPS directly (some static builds have
-broken TLS/DNS): write HLS to a local directory and ship files with a curl
-loop. In that mode add `+temp_file` to `-hls_flags` so segments appear
+broken TLS/DNS). Symptom: ffmpeg reports "Failed to resolve hostname"
+while curl to the same host succeeds - that is your build's resolver
+being broken (common in static builds), not a network problem; skip
+straight to this fallback. Write HLS to a local directory and ship files
+with a curl loop. In that mode add `+temp_file` to `-hls_flags` so
+segments appear
 atomically via rename - without it the uploader races ffmpeg mid-write and
 ships truncated segments that are never re-sent. Key hygiene for loops
 like this: `curl -H @headerfile` keeps the API key off the process argv.

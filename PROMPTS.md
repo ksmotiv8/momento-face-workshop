@@ -1,8 +1,13 @@
 # Prompt Sheet
 
-Every workshop prompt in one place, in order. Paste them into your coding
-agent one at a time; read what comes back before moving on. Replace
-`<cache>`, `<endpoint>`, and `<name>` with your values.
+Every main-track (`SYLLABUS.md`) prompt in one place, in order. Paste
+them into your coding agent one at a time; read what comes back before
+moving on. Replace `<cache>`, `<endpoint>`, and `<name>` with your
+values.
+
+Local track: the prompts that differ (Valkey index 3a/3b, local sink 4b,
+enroll 6) live inline in `SYLLABUS-LOCAL.md`; use that file as your
+sheet for those modules.
 
 Two habits that make these work:
 
