@@ -22,7 +22,7 @@ JPEG  ──POST──►  Momento Function "face-detect"
                   2. align + embed each  (ArcFace-family ONNX via tract)
                   3. match vs library    (cosine similarity)
                   ▼
-                 {"faces":[{"x":..,"y":..,"w":..,"h":..,"name":"George W Bush","sim":0.94}]}
+                 {"faces":[{"x":..,"y":..,"w":..,"h":..,"name":"Barack Obama","sim":0.94}]}
                   + results written to cache keys for other consumers
 ```
 
@@ -234,7 +234,10 @@ plan turns every invoke after the first into ~0.5 seconds total.
 ## Getting test data (portraits and probes)
 
 You need two kinds of images: portraits of known people to build the
-library, and probe images to test recognition.
+library, and probe images to test recognition. A ready-made set (5
+identities, genuine-pair probes, multi-face photos, strangers) ships in
+the workshop repo:
+https://github.com/ksmotiv8/momento-face-workshop/tree/main/faces
 
 **Wikipedia lead portraits** (good demo library): the REST API gives one
 canonical portrait per public figure, with stable URLs. Send a real
@@ -242,7 +245,7 @@ User-Agent and keep the thumbnail URL exactly as returned (do not rewrite
 the size in the path):
 
 ```bash
-for NAME in George_W._Bush Colin_Powell Tony_Blair Serena_Williams Angelina_Jolie Nelson_Mandela; do
+for NAME in Barack_Obama Joe_Biden Kit_Harington Rose_Leslie Alex_Lacamoire; do
   URL=$(curl -sL "https://en.wikipedia.org/api/rest_v1/page/summary/$NAME" \
         -H "User-Agent: my-face-demo/1.0 (you@example.com)" \
         | python3 -c "import json,sys; print(json.load(sys.stdin).get('thumbnail',{}).get('source',''))")
