@@ -7,6 +7,22 @@ Test data for the recognition pipeline:
 - `probes/` - photos used to TEST the deployed function (Module 3):
   second photos of library identities (genuine pairs), multi-face photos,
   and strangers who should stay unmatched.
+- `faces-library.json` - a prebuilt embeddings library for the 5
+  portraits (512-D vectors from the w600k_mbf model, L2-normalized,
+  ~31 KB). Two uses: PUT it straight to your cache to unblock Module 3
+  without finishing Module 2, or diff it against your own `build` output
+  to verify your pipeline. Caveat: embeddings only compare if your
+  preprocessing matches the skill's recipe exactly (RGB, +25% square
+  crop, 112x112 Triangle resize, (x-127.5)/127.5). If your genuine-pair
+  scores against this library look mysteriously low, your preprocessing
+  diverged - that is itself a useful lesson.
+
+```bash
+# use it directly: PUT to your cache and the recognizer is live
+KEY=$(cat ~/.mo-creds)
+curl -X PUT -H "Authorization: $KEY" --data-binary @faces/faces-library.json \
+  "https://<endpoint>/cache/<cache>?key=faces-library.json&ttl_seconds=86400"
+```
 
 ## Sources and terms
 
