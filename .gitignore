@@ -1,0 +1,16 @@
+# build artifacts
+target/
+*.wasm
+
+# models are downloaded, not committed (size + licensing)
+*.onnx
+seeta_fd_frontal_v1.0.bin
+
+# credentials must never land here
+.mo-creds
+*.pem
+*.key
+
+# local agent state
+.mo/
+.claude/
