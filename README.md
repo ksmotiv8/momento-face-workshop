@@ -73,9 +73,15 @@ brew install momentohq/tap/momento-cli          # macOS
 
 Either works; the skills are compatible with both.
 
-- **mo** (Momento's native coding agent): get the binary from your Momento
-  contact, put it on your PATH, then `mo login` (browser OAuth). mo reads
-  project skills from `.mo/skills/` and also honors Claude Code skills.
+- **mo** (Momento's native coding agent):
+
+  ```bash
+  brew install momentohq/tap/mo
+  mo login        # browser OAuth
+  ```
+
+  mo reads project skills from `.mo/skills/` and also honors Claude Code
+  skills. It self-updates on launch.
 - **Claude Code**: `npm install -g @anthropic-ai/claude-code`, then
   `claude` in this directory. Claude Code reads project skills from
   `.claude/skills/`.
