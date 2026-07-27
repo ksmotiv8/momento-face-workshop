@@ -247,6 +247,48 @@ claim — before you call it done.*
 
 ---
 
+## Module 8 — Reflect: interrogate what you built (30 min)
+
+You built it with an agent, which means you can build something without
+fully understanding it. This module closes that gap. The technique:
+instead of asking the agent to DO things, ask it to explain, challenge,
+and quiz - the agent has full context of your session, which makes it the
+best tutor you will ever have for this exact system.
+
+Run these one at a time. Do not skim the answers; argue with them.
+
+**Understand the design:**
+> Walk me through every design decision we made that I did not explicitly
+> ask for. For each: what was the alternative, and why did you pick this?
+
+> Why do embeddings work for recognition at all? Explain what the 512
+> numbers mean, why cosine similarity is the right comparison, and what
+> the L2 normalization is for - to someone who knows no ML.
+
+**Probe the limits:**
+> What breaks first if 100 cameras hit this system at once? Walk the
+> request path and find the bottleneck.
+
+> What are three ways this system misidentifies someone, and what would
+> each cost in a real deployment?
+
+**Test yourself:**
+> Quiz me: 10 questions about what we built, one at a time, hardest
+> first. Wait for my answer before showing yours. Keep score honestly.
+
+> I will explain how a frame gets from ffmpeg to a name on screen. Point
+> out everything I get wrong or skip. [then type your explanation]
+
+**Invert it:**
+> If we rebuilt this from scratch tomorrow, what should we do differently?
+> What did we learn the expensive way that we now get for free?
+
+*The quiz usually stings. Wrong answers there are the most valuable
+15 minutes of the workshop - each one is a thing you shipped without
+understanding, found while it is still cheap to learn.*
+
+---
+
 ## Reference
 
 **Operational gotchas**

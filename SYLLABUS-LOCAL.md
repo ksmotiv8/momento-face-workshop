@@ -149,6 +149,23 @@ operational surface) and say when you would choose each.
 
 ---
 
+## Module 8 — Reflect: interrogate what you built (30 min)
+
+Same exercise as the main track Module 8: stop asking the agent to do,
+start asking it to explain, challenge, and quiz. All the prompts there
+apply; add these two, which are specific to this track:
+
+> We ran the same model in wasm (main track) and natively. Walk me
+> through everything that changed and everything that did not - and what
+> that says about where the real complexity in this system lives.
+
+> Explain why valkey returns distance while our threshold was calibrated
+> as similarity, and what would have happened if we had used 0.30 as a
+> distance cutoff. What is the general lesson about porting numbers
+> between systems?
+
+---
+
 ## Reference deltas from the main track
 
 | Topic | Main track | This track |
