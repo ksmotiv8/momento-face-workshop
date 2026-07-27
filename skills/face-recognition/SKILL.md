@@ -420,6 +420,12 @@ detector construction is cheap.
   tap: `fps=2,scale=256:-2` into an atomically rewritten JPEG, POST on
   mtime change). Pass the frame's capture time in a header so results can
   be time-aligned with playback.
+- **Native binaries**: if you run detection outside wasm as a local
+  binary that loads models from disk, resolve model paths absolutely (or
+  relative to the executable, not the working directory). Daemons and
+  sidecars invoke it from their own cwd, where a relative `../models/...`
+  path fails instantly and, with stderr swallowed, looks like "zero faces
+  in every frame" rather than an error.
 - **Scale**: past a few hundred identities, move matching to a vector
   index. See the turbopuffer-* and valkey-cluster-vector-* examples in
   https://github.com/momentohq/functions/tree/main/examples.

@@ -89,7 +89,9 @@ Two habits that make these work:
 > and put `&token=` in the segment filename template so players can
 > resolve relative URIs. Verify by fetching the playlist and watching
 > MEDIA-SEQUENCE advance, then fetch a segment and check the first byte
-> is 0x47.
+> is 0x47. If ffmpeg reports "Failed to resolve hostname" while curl to
+> the same host works, the ffmpeg build's resolver is broken: use the
+> curl-loop fallback in the momento-streaming-origin skill.
 
 ## Module 6 - Enrollment without redeploy
 

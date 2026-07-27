@@ -41,7 +41,7 @@ Smoke test:
 KEY=$(cat ~/.mo-creds); EP=https://api.cache.<cell-host>.prod.a.momentohq.com
 curl -X PUT -H "Authorization: $KEY" --data "hello" \
   "$EP/cache/<cache>?key=smoke&ttl_seconds=60"     # expect 204
-curl -H "Authorization: $KEY" "$EP/cache/<cache>?key=smoke"   # "hello"
+curl -H "Authorization: $KEY" "$EP/cache/<cache>?key=smoke"   # expect 200 with body "hello"
 ```
 
 > **Prompt:** "Verify my Momento setup: my API key is in `~/.mo-creds` and my
@@ -54,7 +54,10 @@ curl -H "Authorization: $KEY" "$EP/cache/<cache>?key=smoke"   # "hello"
 
 `cargo init --lib`, `crate-type = ["cdylib"]`, `.cargo/config.toml` with
 `target = "wasm32-wasip2"`, deps `momento-functions-guest-web` +
-`momento-functions-bytes`. Handler registered with `invoke!(handler)`.
+`momento-functions-bytes`. Handler registered with `invoke!(handler)`; the
+handler must take the request payload even if it ignores it:
+`fn handler(_payload: Data) -> &'static str { ... }` (a zero-arg handler
+fails with an opaque macro-expansion type error).
 Deploy = base64 the wasm, `PUT /functions/manage/<cache>/hello`, expect 204.
 
 **Exercise 1a — raw string**
@@ -193,6 +196,10 @@ playlist and segments are just cache items; TTL is the garbage collector.
 **Non-negotiables:** `-http_persistent 1` (without it, TLS dies mid-upload,
 sometimes silently) · rate-cap for the 1 MiB limit · skip `delete_segments`,
 let TTLs clean up · `program_date_time` for time alignment.
+
+If ffmpeg reports "Failed to resolve hostname" while curl to the same host
+works, your ffmpeg build's resolver is broken (common in static builds):
+use the curl-loop fallback in the `momento-streaming-origin` skill.
 
 *Latency budget: ~3–5 s glass-to-glass with 1 s segments and a player synced
 2 segments from the live edge.*

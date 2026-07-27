@@ -75,7 +75,16 @@ rustup target add wasm32-wasip2
 # ffmpeg (modules 4-5) - use a full build, not a static one
 brew install ffmpeg            # macOS
 sudo apt install ffmpeg        # Debian/Ubuntu
+sudo dnf install ffmpeg        # RHEL/Amazon Linux (enable EPEL/RPM Fusion first)
+```
 
+Why not a static ffmpeg build: common static builds (e.g. the johnvansickle
+tarballs) ship a broken DNS/TLS resolver and fail Module 5's direct HTTPS PUT
+with "Failed to resolve hostname ... System error" even though curl works. If
+a static build is all you can get, use the curl-loop fallback documented in
+the `momento-streaming-origin` skill.
+
+```bash
 # Momento CLI (optional but handy: cache create/list/set/get)
 brew install momentohq/tap/momento-cli          # macOS
 # or grab a release: https://github.com/momentohq/momento-cli/releases
@@ -145,7 +154,7 @@ KEY=$(cat ~/.mo-creds)
 EP=https://api.cache.cell-4-us-west-2-1.prod.a.momentohq.com   # your region's endpoint
 curl -X PUT -H "Authorization: $KEY" --data "hello" \
   "$EP/cache/<cache>?key=smoke&ttl_seconds=60"        # expect: 204
-curl -H "Authorization: $KEY" "$EP/cache/<cache>?key=smoke"    # expect: hello
+curl -H "Authorization: $KEY" "$EP/cache/<cache>?key=smoke"    # expect: 200 with body "hello"
 ```
 
 Or hand it to the agent (the Module 0 prompt):
