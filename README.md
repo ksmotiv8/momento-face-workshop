@@ -18,8 +18,20 @@ the knowledge it needs (the `skills/`), gives you the exercises
 
 ## Repo layout
 
+Two tracks share this repo:
+
+- **Full serverless track** (`SYLLABUS.md`): recognition runs inside a
+  Momento Function in wasm. The complete experience, including the
+  constraints that make it interesting. ~5.25 hours.
+- **Local track** (`SYLLABUS-LOCAL.md`): one hello-world Function for the
+  serverless taste, then recognition runs natively and a local Valkey
+  indexes the embeddings (real KNN vector search instead of brute force).
+  Simpler, faster (~3.5 hours), and it teaches the vector-index lesson
+  the full track only mentions. Needs Docker for Valkey.
+
 ```
-SYLLABUS.md          the workshop: 8 modules with prompts, timings, expected results
+SYLLABUS.md          the full serverless workshop: 8 modules with prompts and timings
+SYLLABUS-LOCAL.md    the local track: native recognition + Valkey vector index
 PROMPTS.md           all prompts in one copy-paste sheet
 skills/              agent reference skills (install into your agent, step 4)
   momento-functions/         write, deploy, debug wasm functions
