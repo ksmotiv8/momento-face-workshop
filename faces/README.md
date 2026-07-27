@@ -20,6 +20,23 @@ implied. If you are an owner and want an image removed, open an issue.
 
 These images are NOT covered by the repository's MIT license.
 
+## Why only one portrait per identity?
+
+It is a train/test split, not a limit of the pipeline. `portraits/`
+becomes the library; the second photos live in `probes/` as HELD-OUT
+genuine pairs, which is what makes the Module 2 threshold calibration
+honest (same-person similarity measured across different photos). If the
+extra photos joined the library, probing with them would test on training
+data and every score would be a meaningless ~0.98.
+
+Matching itself handles multiple entries per person fine - the nearest
+entry wins - and production libraries should carry 2-3 photos per person
+(or a centroid) for pose/lighting robustness. To do that here you need
+two small changes: a naming convention the library builder understands
+(`Name_2.jpg` must map to "Name", not "Name 2"), and dropping the
+one-vector-per-person replacement in the enrollment function. A good
+stretch exercise after Module 6.
+
 ## Better: use your own
 
 The workshop is more fun with faces you know. Replace or extend these
