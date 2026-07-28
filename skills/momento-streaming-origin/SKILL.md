@@ -40,7 +40,7 @@ items. No servers to run; TTL is the garbage collector.
 Smoke test the whole chain in one line:
 
 ```bash
-KEY=$(cat ~/.mo-creds); EP=https://api.cache.<cell-host>
+KEY=$(cat ~/.mo-creds); EP=<endpoint>   # e.g. https://api.cache.cell-4-us-west-2-1.prod.a.momentohq.com
 curl -X PUT -H "Authorization: $KEY" --data "hello" \
   "$EP/cache/<cache>?key=smoke-test&ttl_seconds=60"          # expect 204
 curl -H "Authorization: $KEY" "$EP/cache/<cache>?key=smoke-test"  # "hello"
@@ -130,9 +130,10 @@ GET-only origin) or a different transport.
 ## Verification checklist
 
 ```bash
-curl -s "https://<ep>/cache/<cache>?key=stream.m3u8&token=$KEY"   # 200, playlist
+PL="https://<ep>/cache/<cache>?key=stream.m3u8&token=$KEY"
+curl -s "$PL"                          # 200, playlist body
 # media-sequence should advance ~1 per segment-duration:
-grep MEDIA-SEQUENCE; sleep 5; grep MEDIA-SEQUENCE
+curl -s "$PL" | grep MEDIA-SEQUENCE; sleep 5; curl -s "$PL" | grep MEDIA-SEQUENCE
 # fetch a segment via a playlist-relative URI; first byte 0x47 (MPEG-TS):
 curl -s "https://<ep>/cache/<seg-uri-from-playlist>" | head -c1 | od -An -tx1
 ```

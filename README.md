@@ -1,15 +1,18 @@
 # Momento Face Recognition Workshop
 
-Build a serverless face recognition service with a coding agent: WebAssembly
-functions running next to a Momento cache detect and recognize faces, the
-face library lives in the cache (add people with no redeploy), and a live
-video stream gets recognized in flight with Momento as the HLS origin.
+Build a face recognition system with a coding agent: deploy a WebAssembly
+function to Momento (your serverless foundation), run a native ML pipeline
+that detects and embeds faces, index the embeddings in a local Valkey with
+real KNN vector search, recognize faces in live video, and optionally
+stream that video through Momento as a serverless HLS origin.
 
 ```
-camera / test stream ──ffmpeg──► Momento cache "origin"  ◄──── browser / players
-                        │              ▲
-                        └─frames──► Momento Function (wasm)
-                                    detect -> embed -> match -> names
+camera / test stream ──ffmpeg──► Momento cache (HLS origin + results, optional)
+                        │
+                        └─frames──► recognize (native binary)
+                                    detect -> embed -> FT.SEARCH KNN -> names
+                                                          │
+                                                    local Valkey index
 ```
 
 You drive the build by prompting a coding agent. This repo gives the agent
@@ -68,6 +71,10 @@ cache, and all data lives at `/cache/<cache>?key=...`.
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 rustup target add wasm32-wasip2
 
+# Docker (runs the local Valkey; the workshop uses the valkey/valkey-bundle
+# image because it includes the search module - plain valkey has no FT.*)
+# macOS: https://docs.docker.com/desktop/   Linux: your distro's docker packages
+
 # ffmpeg (modules 4-5) - use a full build, not a static one
 brew install ffmpeg            # macOS
 sudo apt install ffmpeg        # Debian/Ubuntu
@@ -118,8 +125,8 @@ mkdir -p .claude/skills && cp -r skills/* .claude/skills/
 Skills are reference material the agent reads on demand. They carry a
 guard: loading one never starts work by itself. But they matter a lot:
 without them, each module takes 2-3x longer while the agent rediscovers
-platform behavior (deploy payload shapes, memory limits, HLS quirks) the
-hard way.
+platform behavior (deploy payload shapes, the Valkey distance-vs-similarity
+convention, client version pinning, HLS quirks) the hard way.
 
 ### 5. Download the models
 
@@ -153,11 +160,13 @@ curl -X PUT -H "Authorization: $KEY" --data "hello" \
 curl -H "Authorization: $KEY" "$EP/cache/<cache>?key=smoke"    # expect: 200 with body "hello"
 ```
 
-Or hand it to the agent (the Module 0 prompt):
+This checks the Momento half only. Once Docker is running you can hand
+the agent the full Module 0 prompt, which also verifies Valkey:
 
-> Verify my Momento setup: my API key is in `~/.mo-creds` and my cache is
-> `<name>` at endpoint `<endpoint>`. Do a PUT then GET of a test key and
-> confirm both succeed. Never echo the key.
+> Verify my setup: Momento PUT/GET smoke test with the key in
+> `~/.mo-creds` against cache `<cache>` at endpoint `<endpoint>`, and
+> confirm my local valkey at port `<port>` has the search module loaded.
+> Never echo the key.
 
 ### 7. Run the workshop
 

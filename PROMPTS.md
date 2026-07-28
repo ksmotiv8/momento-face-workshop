@@ -2,8 +2,10 @@
 
 Every workshop prompt in one place, in order (matching `SYLLABUS.md`).
 Paste them into your coding agent one at a time; read what comes back
-before moving on. Replace `<cache>`, `<endpoint>`, `<name>`, and `<port>`
-with your values.
+before moving on. Replace `<cache>`, `<endpoint>`, and `<port>` with your
+values. Other angle-bracket tokens inside prompts (like `<name>` in the
+greeting or enroll exercises) are program inputs - leave them to the
+agent.
 
 Two habits that make these work:
 
@@ -86,13 +88,17 @@ Two habits that make these work:
 > and put `&token=` in the segment filename template so players can
 > resolve relative URIs. Verify by fetching the playlist and watching
 > MEDIA-SEQUENCE advance, then fetch a segment and check the first byte
-> is 0x47. If ffmpeg reports "Failed to resolve hostname" while curl to
-> the same host works, the ffmpeg build's resolver is broken: use the
-> curl-loop fallback in the momento-streaming-origin skill.
+> is 0x47. For the `&token=` in the playlist, use a scoped short-lived
+> key minted for this stream, not my main workshop key.
+
+Contingency (not part of the prompt): if ffmpeg reports "Failed to
+resolve hostname" while curl to the same host works, the ffmpeg build's
+resolver is broken (common in static builds) - use the curl-loop
+fallback in the momento-streaming-origin skill.
 
 ## Module 6 - Enrollment
 
-> Add an `enroll <image> <name>` subcommand: detect the largest face,
+> Add a `libbuild enroll <image> <name>` subcommand: detect the largest face,
 > embed it, HSET it into the valkey index, and prove the very next
 > `recognize` run names that person. Support multiple entries per person
 > (face:<name>:<n> keys) - nearest entry wins.

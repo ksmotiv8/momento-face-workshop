@@ -58,7 +58,9 @@ the camera. But do not ship it against uncontrolled imagery and conclude
   recommended), and an API key. The cache must exist before you can
   deploy a function.
 - Rust with the wasm target: `rustup target add wasm32-wasip2`.
-- Models (download once into your crate directory):
+- Models (download once into your crate directory, or into a shared
+  `models/` directory that crates reference - the workshop repo's
+  convention, which survives restructuring):
   - Embedder, both tiers: w600k_mbf (~13.6 MB), MobileFaceNet trained
     with ArcFace on WebFace600K, 112x112 in, 512-D out:
     `https://huggingface.co/immich-app/buffalo_s/resolve/main/recognition/model.onnx`
@@ -345,9 +347,12 @@ fn best_match<'a>(library: &'a [LibEntry], e: &[f32]) -> Option<(&'a str, f32)> 
 3. Put the threshold in the gap, biased toward your failure preference
    (higher = fewer false accepts, more misses).
 
-Calibration points from a frontal, well-lit test set (six Wikipedia
-portraits, near-frontal probes): impostor pairs measured <= 0.12, genuine
-pairs 0.78-0.97, and 0.35 sat comfortably between. Treat those numbers as
+Calibration points from a frontal, well-lit test set (a SIX-portrait
+Wikipedia set, different from and easier than the workshop repo's five;
+near-frontal probes): impostor pairs measured <= 0.12, genuine pairs
+0.78-0.97, and 0.35 sat comfortably between. The workshop's five-portrait
+set measures differently (impostors <= 0.16, genuine 0.35-0.93,
+threshold 0.30) - two datasets, two calibrations, same method. Treat those numbers as
 what an EASY dataset looks like, not a promise: genuine pairs across hard
 pose/lighting changes can fall to 0.3-0.5, which is exactly why tier B
 alignment and a measured threshold matter for general use. Also test the

@@ -8,14 +8,14 @@ stream that video through Momento as a serverless HLS origin.
 
 **Prereqs:** Momento account + cache + API key (in `~/.mo-creds`, one line) ·
 Rust + `rustup target add wasm32-wasip2` · Docker (for Valkey) · ffmpeg
-(modules 4–5, full build not static) · the two models (README step 5) ·
+(modules 4-5, full build not static) · the two models (README step 5) ·
 your HTTP endpoint, e.g.
 `https://api.cache.cell-4-us-west-2-1.prod.a.momentohq.com`
 
-Core track: Modules 0–4, 6, and 7, about 4.25 hours. Module 5 is
+Core path: Modules 0-4, 6, and 7, about 4.25 hours. Module 5 is
 optional; Module 8 is a recommended 30-minute wrap-up.
 
-### Skills
+## Skills
 
 This workshop assumes four skills are **registered and loaded** before you
 start. A skill is a markdown reference the agent reads on demand - it does
@@ -24,12 +24,12 @@ not auto-execute, it just makes the agent informed.
 | Skill | When it matters | What it gives you |
 |---|---|---|
 | `momento-functions` | Module 1 | Handler styles, deploy PUT shape, `Data` payload signature, ARG_MAX trap |
-| `face-recognition` | Modules 2–4, 6 | Model choices, preprocessing contract, calibration procedure, detection floor |
-| `ffmpeg` | Modules 4–5 | `split` + `fps` frame tap, atomic JPEG rewrite, mtime-as-capture-time, HLS muxer settings |
+| `face-recognition` | Modules 2-4, 6 | Model choices, preprocessing contract, calibration procedure, detection floor |
+| `ffmpeg` | Modules 4-5 | `split` + `fps` frame tap, atomic JPEG rewrite, mtime-as-capture-time, HLS muxer settings |
 | `momento-streaming-origin` | Modules 0, 4, 5 | HTTP API, cache-as-origin model, `-http_persistent 1`, curl-loop fallback |
 
 **Register the skills ahead of the workshop.** If the agent has to discover
-this from scratch, each module takes 2–3× longer and produces more wrong
+this from scratch, each module takes 2-3x longer and produces more wrong
 turns. The prompts below assume the agent has read the relevant skill.
 
 Each exercise has a **prompt** - paste it into your coding agent.
@@ -43,7 +43,7 @@ Functions deploy *onto* a cache (`/functions/manage/<cache>/<name>`), data
 lives at `/cache/<cache>?key=`.
 
 ```bash
-KEY=$(cat ~/.mo-creds); EP=https://api.cache.<cell-host>.prod.a.momentohq.com
+KEY=$(cat ~/.mo-creds); EP=<endpoint>   # e.g. https://api.cache.cell-4-us-west-2-1.prod.a.momentohq.com
 curl -X PUT -H "Authorization: $KEY" --data "hello" \
   "$EP/cache/<cache>?key=smoke&ttl_seconds=60"     # expect 204
 curl -H "Authorization: $KEY" "$EP/cache/<cache>?key=smoke"   # expect 200, body "hello"
@@ -53,18 +53,20 @@ Valkey side: run the bundle image, which includes the `search` module
 (plain valkey has no FT.* commands):
 
 ```bash
-ss -ltn | grep -E ':(6379|16379)\b'   # anything printed = port taken; pick a free one
+ss -ltn | grep -E ':(6379|16379)\b'   # Linux: anything printed = port taken
+# macOS: lsof -iTCP:6379 -sTCP:LISTEN
 VALKEY_PORT=6379                      # set to any free host port
 docker run -d --name valkey --rm -p ${VALKEY_PORT}:6379 valkey/valkey-bundle
 docker exec valkey valkey-cli MODULE LIST | grep -A1 search   # expect: search
 ```
 
-Every later valkey command in this track uses this same host port, so
+Every later valkey command in this workshop uses this same host port, so
 note whatever you picked.
 
 > **Prompt:** "Verify my setup: Momento PUT/GET smoke test with the key in
-> `~/.mo-creds` against cache `<cache>`, and confirm my local valkey at
-> port `<port>` has the search module loaded. Never echo the key."
+> `~/.mo-creds` against cache `<cache>` at endpoint `<endpoint>`, and
+> confirm my local valkey at port `<port>` has the search module loaded.
+> Never echo the key."
 
 ---
 
@@ -81,7 +83,7 @@ Deploy = base64 the wasm, `PUT /functions/manage/<cache>/hello`, expect 204.
 
 **Exercise 1a - raw string**
 > **Prompt:** "Create a Rust Momento Function that returns 'hello world' as a
-> plain string. Build for wasm32-wasip2, deploy to cache `<name>` as `hello`,
+> plain string. Build for wasm32-wasip2, deploy to cache `<cache>` as `hello`,
 > and invoke it to prove it works. Put the deploy+invoke steps in a reusable
 > script that reads the key from `~/.mo-creds` inside the script."
 
@@ -91,14 +93,14 @@ Deploy = base64 the wasm, `PUT /functions/manage/<cache>/hello`, expect 204.
 > Redeploy and test with my name."
 
 **Two traps to know about:**
-- Inlining base64 in the curl command → `Argument list too long`. Write the
+- Inlining base64 in the curl command -> `Argument list too long`. Write the
   JSON body to a temp file, use `--data-binary @file`.
 - Older runtimes rejected the trailing newline `echo '{"name":"x"}'` appends
   (400 *trailing characters*); current guest crates accept it, but
   `printf '%s'` or a file is still the safe habit.
 
-*Expect: build ~0.7 s, deploy ~250 ms, first invoke ~100–250 ms, warm
-invokes ~15–20 ms.*
+*Expect: build ~0.7 s, deploy ~250 ms, first invoke ~100-250 ms, warm
+invokes ~15-20 ms.*
 
 ---
 
@@ -117,8 +119,8 @@ if preprocessing is byte-identical; one code path guarantees it.
 
 **Exercise 2a - the shared core + host tool**
 > **Prompt:** "Set up a Rust workspace with a shared `facecore` crate
-> (detect → crop 112×112 chip → embed → L2-normalize → cosine match) and a
-> host CLI `libbuild` with subcommands `build` (portraits dir → library JSON),
+> (detect -> crop 112x112 chip -> embed -> L2-normalize -> cosine match) and a
+> host CLI `libbuild` with subcommands `build` (portraits dir -> library JSON),
 > `probe` (score images against the library) and `pairs` (all-pairs cosines).
 > Use rustface for detection and tract-onnx for the ArcFace embedder. Verify
 > it works end to end on one portrait before building out the rest."
@@ -129,7 +131,7 @@ if preprocessing is byte-identical; one code path guarantees it.
 > second photos in `faces/probes`). Report both ranges and recommend a
 > threshold in the gap."
 
-*Reference numbers: impostors ≤ 0.16, genuine 0.35–0.93, threshold 0.30.
+*Reference numbers: impostors ≤ 0.16, genuine 0.35-0.93, threshold 0.30.
 Do not copy these - measure yours.*
 
 The shipped `faces/faces-library.json` is a sanity reference, not an
@@ -243,17 +245,23 @@ collector.
 > item limit, set `-g` = fps so every segment starts on a keyframe, and put
 > `&token=` in the segment filename template so players can resolve relative
 > URIs. Verify by fetching the playlist and watching MEDIA-SEQUENCE advance,
-> then fetch a segment and check the first byte is 0x47."
+> then fetch a segment and check the first byte is 0x47. For the `&token=`
+> in the playlist, use a scoped short-lived key minted for this stream,
+> not my main workshop key."
 
 **Non-negotiables:** `-http_persistent 1` (without it, TLS dies mid-upload,
 sometimes silently) · rate-cap for the 1 MiB limit · skip `delete_segments`,
 let TTLs clean up · `program_date_time` for time alignment.
 
+**Key hygiene:** the `&token=` in the playlist means anyone who reads the
+playlist holds that key. Mint a scoped, short-lived key in the console for
+the stream token; do not embed your super-user workshop key.
+
 If ffmpeg reports "Failed to resolve hostname" while curl to the same host
 works, your ffmpeg build's resolver is broken (common in static builds):
 use the curl-loop fallback in the `momento-streaming-origin` skill.
 
-*Latency budget: ~3–5 s glass-to-glass with 1 s segments and a player synced
+*Latency budget: ~3-5 s glass-to-glass with 1 s segments and a player synced
 2 segments from the live edge.*
 
 ---
@@ -266,7 +274,7 @@ design to add people without redeploying; locally there is nothing to
 redeploy, but only THIS machine learns the face. Neither is better; they
 answer different questions.
 
-> **Prompt:** "Add an `enroll <image> <name>` subcommand: detect the
+> **Prompt:** "Add a `libbuild enroll <image> <name>` subcommand: detect the
 > largest face, embed it, HSET it into the valkey index, and prove the
 > very next `recognize` run names that person. Support multiple entries
 > per person (face:<name>:<n> keys) - nearest entry wins."
@@ -340,7 +348,7 @@ Run these one at a time. Do not skim the answers; argue with them.
 > I will explain how a frame gets from ffmpeg to a name in the log. Point
 > out everything I get wrong or skip. [then type your explanation]
 
-**Track-specific:**
+**About this build:**
 > We deployed one wasm function and ran the ML natively. Walk me through
 > what would change - and what would not - if the recognizer moved inside
 > a Momento Function. What does that say about where the real complexity
