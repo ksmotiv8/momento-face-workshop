@@ -1,13 +1,9 @@
 # Prompt Sheet
 
-Every main-track (`SYLLABUS.md`) prompt in one place, in order. Paste
-them into your coding agent one at a time; read what comes back before
-moving on. Replace `<cache>`, `<endpoint>`, and `<name>` with your
-values.
-
-Local track: the prompts that differ (Valkey index 3a/3b, local sink 4b,
-enroll 6) live inline in `SYLLABUS-LOCAL.md`; use that file as your
-sheet for those modules.
+Every workshop prompt in one place, in order (matching `SYLLABUS.md`).
+Paste them into your coding agent one at a time; read what comes back
+before moving on. Replace `<cache>`, `<endpoint>`, `<name>`, and `<port>`
+with your values.
 
 Two habits that make these work:
 
@@ -18,11 +14,12 @@ Two habits that make these work:
 
 ## Module 0 - Setup
 
-> Verify my Momento setup: my API key is in `~/.mo-creds` and my cache is
-> `<cache>` at endpoint `<endpoint>`. Do a PUT then GET of a test key and
-> confirm both succeed. Never echo the key.
+> Verify my setup: Momento PUT/GET smoke test with the key in
+> `~/.mo-creds` against cache `<cache>` at endpoint `<endpoint>`, and
+> confirm my local valkey at port `<port>` has the search module loaded.
+> Never echo the key.
 
-## Module 1 - Hello world function
+## Module 1 - Hello World function
 
 > Create a Rust Momento Function that returns 'hello world' as a plain
 > string. Build for wasm32-wasip2, deploy to cache `<cache>` as `hello`,
@@ -33,54 +30,54 @@ Two habits that make these work:
 > `{"message":"Hello <name>"}` using `Json<T>` for request and response.
 > Redeploy and test with my name.
 
-## Module 2 - Face pipeline, offline
+## Module 2 - Face pipeline, native
 
 > Set up a Rust workspace with a shared `facecore` crate
 > (detect -> crop 112x112 chip -> embed -> L2-normalize -> cosine match)
 > and a host CLI `libbuild` with subcommands `build` (portraits dir ->
 > library JSON), `probe` (score images against the library) and `pairs`
 > (all-pairs cosines). Use rustface for detection and tract-onnx for the
-> ArcFace embedder. Verify it works natively before any wasm work.
+> ArcFace embedder. Verify it works end to end on one portrait before
+> building out the rest.
 
 > Build a library from the portraits in `faces/portraits`, then measure
 > impostor cosines (`pairs`) and genuine cosines (probe the second photos
 > in `faces/probes`). Report both ranges and recommend a threshold in the
 > gap.
 
-## Module 3 - Deploy the recognizer
+## Module 3 - Valkey as the embeddings index
 
-> Write a Momento Function that accepts a JPEG POST body and returns
-> `{"faces":[{x,y,w,h,score,name,sim}]}`. Embed both models with
-> `include_bytes!`, read the library from cache key `faces-library.json`
-> on each invoke, and cache the parsed ONNX plan in a `OnceLock`. Bad
-> input must return a clean 400, never a panic. Deploy it and PUT the
-> library to cache.
+> Write a `libbuild index` subcommand that loads `faces-library.json`
+> into my local valkey as an HNSW COSINE index (FT.CREATE, one HSET per
+> entry with the vector packed as little-endian f32 plus a name field).
+> Then verify with an FT.SEARCH KNN query using one of the library
+> vectors - it must return its own name at distance near zero.
 
-> Test my deployed face function in this order and report a table:
-> (1) garbage bytes - expect a clean 400, not a 500; (2) a library
-> portrait - expect its own name near 0.98; (3) a different photo of the
-> same person; (4) a multi-face photo; (5) strangers - expect faces with
-> no name; (6) the same portrait 10x - confirm warm latency is stable.
+> Write a `recognize` binary: given an image, detect faces with facecore,
+> embed each, and match via FT.SEARCH KNN against valkey instead of brute
+> force. Careful: valkey returns cosine DISTANCE (1 - similarity), so my
+> similarity threshold of T accepts matches with dist <= 1 - T. Run the
+> full probe set from `faces/probes` and report a table: genuine pairs
+> named, multi-face photos counted correctly, strangers unmatched.
 
-> Probe my function with a group photo containing many small faces. If it
-> finds none, diagnose why by computing the face size after downscaling to
-> the detection plane, then raise the plane via the `DETECT_PLANE` env var
-> and re-test. Report faces found and latency at both settings.
-
-## Module 4 - Live video recognition
+## Module 4 - Live video, local recognition
 
 > Build a simulated camera stream with ffmpeg: `testsrc2` background with
 > two known face images overlaid on co-prime periods (so they appear
-> alone, together, and not at all). Split it: one branch encodes H.264,
-> the other taps 2 fps to an atomically-rewritten JPEG. Verify the
-> injected faces still recognize as stills before wiring up video.
+> alone, together, and not at all). Size the overlays so each face clears
+> the 20 px detection floor at the tap resolution. Split it: one branch
+> encodes H.264, the other taps 2 fps to an atomically-rewritten JPEG.
+> Verify the injected faces still recognize as stills before wiring up
+> video.
 
-> Write a sidecar that polls the tapped JPEG's mtime at 2x the tap rate,
-> POSTs each new frame to my face function, and logs capture time, frame
-> age, RTT and recognized names. Run ~24 frames and report latency broken
-> down by number of faces in frame.
+> Wire the stream tap to my local recognizer: watch the tapped JPEG's
+> mtime, run `recognize` on each new frame, and log capture time,
+> per-frame latency, and names. Confirm the log shows the
+> alone/together/neither cases from the live stream. Then PUT each result
+> as JSON to my Momento cache under `faces.json` (ttl 60) so a remote
+> dashboard could poll it. Report the latency distribution.
 
-## Module 5 - Momento as streaming origin
+## Module 5 - Momento as streaming origin (optional)
 
 > Publish my ffmpeg stream as HLS directly to Momento as origin: 1 s
 > segments PUT to cache keys with `-method PUT -http_persistent 1`, the
@@ -93,37 +90,65 @@ Two habits that make these work:
 > the same host works, the ffmpeg build's resolver is broken: use the
 > curl-loop fallback in the momento-streaming-origin skill.
 
-## Module 6 - Enrollment without redeploy
+## Module 6 - Enrollment
 
-> Write a second Momento Function `add-face` that takes a JPEG body plus
-> `?name=<person>`, detects the largest face, embeds it, and appends it to
-> `faces-library.json` in the cache. Then confirm my face-detect function
-> recognizes the new person on the very next invoke, with no redeploy.
+> Add an `enroll <image> <name>` subcommand: detect the largest face,
+> embed it, HSET it into the valkey index, and prove the very next
+> `recognize` run names that person. Support multiple entries per person
+> (face:<name>:<n> keys) - nearest entry wins.
 
 ## Module 7 - The blog post
 
 > Write a blog post about what we built in this workshop, for an engineer
 > who has never used Momento. Pull every number from THIS session's real
-> measurements - deploy times, warm vs cold invoke latency, my measured
-> impostor/genuine cosine ranges and threshold, per-face latency, segment
-> sizes - not from the syllabus. Structure: the hook (what runs where, and
-> what is NOT running), the architecture in one diagram, how recognition
-> actually works (embeddings, not training), three things that went wrong
+> measurements - deploy times, invoke latency, my measured
+> impostor/genuine cosine ranges and threshold, per-frame latency, KNN
+> distances - not from the syllabus. Structure: the hook (what runs
+> where, and what is NOT running), the architecture in one diagram, how
+> recognition actually works (embeddings, not training), a
+> local-vs-serverless section with numbers, three things that went wrong
 > and what each taught us, and what we would build next. Include real
 > commands and responses where they carry the story. No em-dashes. Do not
 > brag about platform internals - write what a reader can use.
 
+## Module 8 - Reflect
+
+Run these one at a time; argue with the answers. The full set with
+context is in `SYLLABUS.md` Module 8.
+
+> Walk me through every design decision we made that I did not explicitly
+> ask for. For each: what was the alternative, and why did you pick this?
+
+> Why do embeddings work for recognition at all? Explain what the 512
+> numbers mean, why cosine similarity is the right comparison, and what
+> the L2 normalization is for - to someone who knows no ML.
+
+> What breaks first if 100 cameras hit this system at once? Walk the
+> request path and find the bottleneck.
+
+> Quiz me: 10 questions about what we built, one at a time, hardest
+> first. Wait for my answer before showing yours. Keep score honestly.
+
+> We deployed one wasm function and ran the ML natively. Walk me through
+> what would change - and what would not - if the recognizer moved inside
+> a Momento Function. What does that say about where the real complexity
+> in this system lives?
+
+> Explain why valkey returns distance while our threshold was calibrated
+> as similarity, and what would have happened if we had used 0.30 as a
+> distance cutoff. What is the general lesson about porting numbers
+> between systems?
+
 ## When things go sideways
 
-Real recovery prompts from building this. None contain a diagnosis - that
-is the agent's job:
+Real recovery prompts. None contain a diagnosis - that is the agent's
+job:
 
 > The video is playing way too fast.
 
-> I reloaded and the video isn't playing.
+> The sidecar says zero faces on every frame, but stills recognize fine.
 
-> The timing between the boxes and the faces feels off. Who draws the
-> boxes, and can we make it frame-accurate?
+> ffmpeg says it cannot resolve the hostname, but curl to the same host
+> works.
 
-> Every invoke returns a bare 500 with no message. Figure out where it
-> dies without logs.
+> Everything suddenly matches everyone. What changed?

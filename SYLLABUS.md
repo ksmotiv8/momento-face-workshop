@@ -1,57 +1,76 @@
-# Momento Functions + Face Recognition — Workshop Syllabus
+# Momento + Face Recognition - Workshop Syllabus
 
-Serverless compute next to your data: WebAssembly functions running on Momento
-hosts. You will build a hello-world function, then a face recognition service
-whose ML models run in wasm and whose face library lives in the cache.
+Serverless data plus local ML: you will deploy a WebAssembly function to
+Momento (hello world), build a face recognition pipeline that runs
+natively on your machine, index the face embeddings in a local Valkey
+with real KNN vector search, recognize faces in live video, and (optional)
+stream that video through Momento as a serverless HLS origin.
 
 **Prereqs:** Momento account + cache + API key (in `~/.mo-creds`, one line) ·
-`rustup target add wasm32-wasip2` · ffmpeg (modules 4–5) · your HTTP endpoint,
-e.g. `https://api.cache.cell-4-us-west-2-1.prod.a.momentohq.com`
+Rust + `rustup target add wasm32-wasip2` · Docker (for Valkey) · ffmpeg
+(modules 4–5, full build not static) · the two models (README step 5) ·
+your HTTP endpoint, e.g.
+`https://api.cache.cell-4-us-west-2-1.prod.a.momentohq.com`
+
+Core track: Modules 0–4, 6, and 7, about 4.25 hours. Module 5 is
+optional; Module 8 is a recommended 30-minute wrap-up.
 
 ### Skills
 
 This workshop assumes four skills are **registered and loaded** before you
-start. A skill is a markdown reference the agent reads on demand — it does
-not auto-execute, it just makes the agent informed. Load with `/skill <name>`:
+start. A skill is a markdown reference the agent reads on demand - it does
+not auto-execute, it just makes the agent informed.
 
 | Skill | When it matters | What it gives you |
 |---|---|---|
-| `momento-functions` | Modules 1–3, 6 | Handler styles, deploy PUT shape, `OnceLock` warm-cache, env-var field name, 502/500 triage |
+| `momento-functions` | Module 1 | Handler styles, deploy PUT shape, `Data` payload signature, ARG_MAX trap |
+| `face-recognition` | Modules 2–4, 6 | Model choices, preprocessing contract, calibration procedure, detection floor |
 | `ffmpeg` | Modules 4–5 | `split` + `fps` frame tap, atomic JPEG rewrite, mtime-as-capture-time, HLS muxer settings |
-| `momento-streaming-origin` | Module 5 | Cache-as-origin model, `-http_persistent 1`, token-in-URL playback, latency budget |
-| `face-recognition` | Modules 2–3, 6 | Model choices, preprocessing contract, calibration procedure, test ladder, detection floor |
+| `momento-streaming-origin` | Modules 0, 4, 5 | HTTP API, cache-as-origin model, `-http_persistent 1`, curl-loop fallback |
 
-**Register the skills your platform needs ahead of the workshop.** If the
-agent has to discover any of this from scratch, each module takes 2–3× longer
-and produces more wrong turns. The prompts below assume the agent has read the
-relevant skill; if a skill is missing, say so in the prompt or the agent will
-guess — and guessing with credentials and deploys is expensive.
+**Register the skills ahead of the workshop.** If the agent has to discover
+this from scratch, each module takes 2–3× longer and produces more wrong
+turns. The prompts below assume the agent has read the relevant skill.
 
-Each exercise has a **prompt** — paste it into your coding agent.
+Each exercise has a **prompt** - paste it into your coding agent.
 
 ---
 
-## Module 0 — Setup (15 min)
+## Module 0 - Setup (20 min)
 
-Create the cache first: nothing else works without it. Functions deploy *onto*
-a cache (`/functions/manage/<cache>/<name>`), data lives at `/cache/<cache>?key=`.
+Momento side: create the cache first - nothing else works without it.
+Functions deploy *onto* a cache (`/functions/manage/<cache>/<name>`), data
+lives at `/cache/<cache>?key=`.
 
-Smoke test:
 ```bash
 KEY=$(cat ~/.mo-creds); EP=https://api.cache.<cell-host>.prod.a.momentohq.com
 curl -X PUT -H "Authorization: $KEY" --data "hello" \
   "$EP/cache/<cache>?key=smoke&ttl_seconds=60"     # expect 204
-curl -H "Authorization: $KEY" "$EP/cache/<cache>?key=smoke"   # expect 200 with body "hello"
+curl -H "Authorization: $KEY" "$EP/cache/<cache>?key=smoke"   # expect 200, body "hello"
 ```
 
-> **Prompt:** "Verify my Momento setup: my API key is in `~/.mo-creds` and my
-> cache is `<name>` at endpoint `<endpoint>`. Do a PUT then GET of a test key
-> and confirm both succeed. Never echo the key."
+Valkey side: run the bundle image, which includes the `search` module
+(plain valkey has no FT.* commands):
+
+```bash
+ss -ltn | grep -E ':(6379|16379)\b'   # anything printed = port taken; pick a free one
+VALKEY_PORT=6379                      # set to any free host port
+docker run -d --name valkey --rm -p ${VALKEY_PORT}:6379 valkey/valkey-bundle
+docker exec valkey valkey-cli MODULE LIST | grep -A1 search   # expect: search
+```
+
+Every later valkey command in this track uses this same host port, so
+note whatever you picked.
+
+> **Prompt:** "Verify my setup: Momento PUT/GET smoke test with the key in
+> `~/.mo-creds` against cache `<cache>`, and confirm my local valkey at
+> port `<port>` has the search module loaded. Never echo the key."
 
 ---
 
-## Module 1 — Hello World function (30 min)
+## Module 1 - Hello World Momento Function (30 min)
 
+Your one serverless deploy: it teaches the platform in 30 minutes.
 `cargo init --lib`, `crate-type = ["cdylib"]`, `.cargo/config.toml` with
 `target = "wasm32-wasip2"`, deps `momento-functions-guest-web` +
 `momento-functions-bytes`. Handler registered with `invoke!(handler)`; the
@@ -60,13 +79,13 @@ handler must take the request payload even if it ignores it:
 fails with an opaque macro-expansion type error).
 Deploy = base64 the wasm, `PUT /functions/manage/<cache>/hello`, expect 204.
 
-**Exercise 1a — raw string**
+**Exercise 1a - raw string**
 > **Prompt:** "Create a Rust Momento Function that returns 'hello world' as a
 > plain string. Build for wasm32-wasip2, deploy to cache `<name>` as `hello`,
 > and invoke it to prove it works. Put the deploy+invoke steps in a reusable
 > script that reads the key from `~/.mo-creds` inside the script."
 
-**Exercise 1b — typed JSON**
+**Exercise 1b - typed JSON**
 > **Prompt:** "Change the function to accept `{"name":"..."}` and return
 > `{"message":"Hello <name>"}` using `Json<T>` for request and response.
 > Redeploy and test with my name."
@@ -83,106 +102,139 @@ invokes ~15–20 ms.*
 
 ---
 
-## Module 2 — Face recognition, offline (60 min)
+## Module 2 - Face pipeline, native (60 min)
 
 No training happens. A pretrained ArcFace model maps any face to a 512-D
 vector; "learning" a person is storing one vector with a name.
 
 **Models:** `seeta_fd_frontal_v1.0.bin` (1.2 MB detector, via `rustface`) and
-`w600k_mbf.onnx` (13.6 MB embedder, via `tract`). Both pure-Rust inference —
-that is what makes wasm feasible.
+`w600k_mbf.onnx` (13.6 MB embedder, via `tract`). Both pure-Rust inference -
+no system dependencies, and the same code could later run in wasm.
 
-**Architecture rule:** put the pipeline in a **shared crate** used by both the
-wasm function and a host CLI. Embeddings only compare if preprocessing is
-byte-identical; one code path guarantees it.
+**Architecture rule:** put the pipeline in a **shared crate** consumed by
+your CLI tools (and by any future wasm function). Embeddings only compare
+if preprocessing is byte-identical; one code path guarantees it.
 
-**Exercise 2a — the shared core + host tool**
+**Exercise 2a - the shared core + host tool**
 > **Prompt:** "Set up a Rust workspace with a shared `facecore` crate
 > (detect → crop 112×112 chip → embed → L2-normalize → cosine match) and a
 > host CLI `libbuild` with subcommands `build` (portraits dir → library JSON),
 > `probe` (score images against the library) and `pairs` (all-pairs cosines).
 > Use rustface for detection and tract-onnx for the ArcFace embedder. Verify
-> it works natively before any wasm work."
+> it works end to end on one portrait before building out the rest."
 
-**Exercise 2b — calibrate your own threshold**
-> **Prompt:** "Download face photos with at least 2 different photos per
-> person for 4+ people. Build a library from one photo each, then measure
-> impostor cosines (`pairs`) and genuine cosines (probe the second photos).
-> Report both ranges and recommend a threshold in the gap. Note: Wikimedia
-> blocks cloud IPs — use raw.githubusercontent.com/ageitgey/face_recognition."
+**Exercise 2b - calibrate your own threshold**
+> **Prompt:** "Build a library from the portraits in `faces/portraits`, then
+> measure impostor cosines (`pairs`) and genuine cosines (probe the
+> second photos in `faces/probes`). Report both ranges and recommend a
+> threshold in the gap."
 
 *Reference numbers: impostors ≤ 0.16, genuine 0.35–0.93, threshold 0.30.
-Do not copy these — measure yours.*
+Do not copy these - measure yours.*
 
-**Key constraints:** `min_face_size` must be ≥ 20 or the detector panics (an
-opaque 500 in wasm) · memory scales with decoded **pixels**, not JPEG bytes ·
-`cargo update kstring@2.0.4 --precise 2.0.2` if rustc < 1.96.
+The shipped `faces/faces-library.json` is a sanity reference, not an
+answer key. Internally consistent scores are what matter: check that your
+same-person cosines sit well above your cross-person cosines. Your
+embeddings will only match the shipped file exactly if your crop and
+resize path matches the recipe byte for byte - see the caveat in
+`faces/README.md`. Separation, not equality with the shipped file, is
+the check.
 
----
-
-## Module 3 — Deploy the recognizer (45 min)
-
-The face library lives in the **cache**, not the wasm, so people can be added
-without redeploying. Cache the parsed ONNX plan in a `OnceLock`: cold ~27 s,
-warm ~620 ms.
-
-**Exercise 3a — the function**
-> **Prompt:** "Write a Momento Function that accepts a JPEG POST body and
-> returns `{"faces":[{x,y,w,h,score,name,sim}]}`. Embed both models with
-> `include_bytes!`, read the library from cache key `faces-library.json` on
-> each invoke, and cache the parsed ONNX plan in a `OnceLock`. Bad input must
-> return a clean 400, never a panic. Deploy it and PUT the library to cache."
-
-**Exercise 3b — the test ladder** (each step isolates one layer)
-> **Prompt:** "Test my deployed face function in this order and report a table:
-> (1) garbage bytes — expect a clean 400, not a 500; (2) a library portrait —
-> expect its own name near 0.98; (3) a different photo of the same person;
-> (4) a multi-face photo; (5) strangers — expect faces with no name;
-> (6) the same portrait 10× — confirm warm latency is stable."
-
-**Exercise 3c — find the detection floor**
-> **Prompt:** "Probe my function with a group photo containing many small
-> faces. If it finds none, diagnose why by computing the face size after
-> downscaling to the detection plane, then raise the plane via the
-> `DETECT_PLANE` env var and re-test. Report faces found and latency at both
-> settings."
-
-*Expected finding: 0 faces at plane 512 (62 px faces → 20 px, at the floor);
-25 faces at plane 1024, but ~35 s. This is the accuracy/latency/memory
-tradeoff made concrete.*
+**Key constraints:** `min_face_size` must be ≥ 20 or the detector panics ·
+`cargo update kstring@2.0.4 --precise 2.0.2` if rustc < 1.96 · native perf
+to enjoy: model load ~50 ms, ~30 ms per embedding, no cold starts, no
+memory budget.
 
 ---
 
-## Module 4 — Live video recognition (45 min)
+## Module 3 - Valkey as the embeddings index (45 min)
 
-One ffmpeg process, two outputs from a `split`: an encoded stream plus a 2 fps
-JPEG tap. `-update 1 -atomic_writing 1` rewrites **one** file atomically, so
-readers never see a partial JPEG — and the file's mtime **is** the frame's
-capture time.
+Replace brute-force matching with a vector index. Embeddings are stored
+as HASH fields (packed little-endian float32) and searched with KNN:
 
-**Exercise 4a — the stream + tap**
+```
+FT.CREATE faces ON HASH PREFIX 1 face: SCHEMA v VECTOR HNSW 6
+  TYPE FLOAT32 DIM 512 DISTANCE_METRIC COSINE
+HSET face:0 v <packed-512-floats> name "Barack Obama"
+FT.SEARCH faces "*=>[KNN 3 @v $q AS dist]" PARAMS 2 q <packed-query>
+  RETURN 2 name dist DIALECT 2
+```
+
+(Verified against valkey-bundle: querying with a library vector returns
+its own entry at dist ~0.0000 and the nearest impostor at ~0.86.)
+
+Client note: if you talk to valkey from Rust, pin the `redis` crate
+version in Cargo.toml (`redis = "=x.y.z"`) and write against that
+version's API. The `Value` enum variants have been renamed more than
+once across releases, so read your pinned version's enum in the registry
+source rather than copying web snippets - they may not compile against
+your version.
+
+**Exercise 3a - load the index**
+> **Prompt:** "Write a `libbuild index` subcommand that loads
+> `faces-library.json` into my local valkey as an HNSW COSINE index
+> (FT.CREATE, one HSET per entry with the vector packed as little-endian
+> f32 plus a name field). Then verify with an FT.SEARCH KNN query using
+> one of the library vectors - it must return its own name at distance
+> near zero."
+
+**Exercise 3b - the recognizer**
+> **Prompt:** "Write a `recognize` binary: given an image, detect faces
+> with facecore, embed each, and match via FT.SEARCH KNN against valkey
+> instead of brute force. Careful: valkey returns cosine DISTANCE
+> (1 − similarity), so my similarity threshold of T accepts matches with
+> dist <= 1 − T. Run the full probe set from `faces/probes` and report a
+> table: genuine pairs named, multi-face photos counted correctly,
+> strangers unmatched."
+
+*The distance-vs-similarity conversion is the lesson here. Port a
+threshold across systems without checking the score convention and
+recognition breaks silently in one direction or the other.*
+
+---
+
+## Module 4 - Live video, local recognition (40 min)
+
+One ffmpeg process, two outputs from a `split`: an encoded stream plus a
+2 fps JPEG tap. `-update 1 -atomic_writing 1` rewrites **one** file
+atomically, so readers never see a partial JPEG - and the file's mtime
+**is** the frame's capture time. A sidecar feeds each new frame to your
+`recognize` binary.
+
+Have `recognize` locate its model files by absolute path (or relative to
+the executable, not the working directory): the sidecar invokes it from
+its own cwd, and a relative `../models/...` path makes every frame report
+zero faces with the error hidden in swallowed stderr.
+
+**Exercise 4a - the stream + tap**
 > **Prompt:** "Build a simulated camera stream with ffmpeg: `testsrc2`
-> background with two known face images overlaid on co-prime periods (so they
-> appear alone, together, and not at all). Split it: one branch encodes H.264,
-> the other taps 2 fps to an atomically-rewritten JPEG. Verify the injected
-> faces still recognize as stills *before* wiring up video."
+> background with two known face images overlaid on co-prime periods (so
+> they appear alone, together, and not at all). Size the overlays so each
+> face clears the 20 px detection floor at the tap resolution. Split it:
+> one branch encodes H.264, the other taps 2 fps to an atomically-rewritten
+> JPEG. Verify the injected faces still recognize as stills *before*
+> wiring up video."
 
-**Exercise 4b — the sink**
-> **Prompt:** "Write a sidecar that polls the tapped JPEG's mtime at 2× the
-> tap rate, POSTs each new frame to my face function, and logs capture time,
-> frame age, RTT and recognized names. Run ~24 frames and report latency
-> broken down by number of faces in frame."
+**Exercise 4b - the sidecar**
+> **Prompt:** "Wire the stream tap to my local recognizer: watch the
+> tapped JPEG's mtime, run `recognize` on each new frame, and log capture
+> time, per-frame latency, and names. Confirm the log shows the
+> alone/together/neither cases from the live stream. Then PUT each result
+> as JSON to my Momento cache under `faces.json` (ttl 60) so a remote
+> dashboard could poll it. Report the latency distribution."
 
-*Expected: ~195 ms for 0 faces, ~555 ms for 1, ~900 ms for 2 — about 360 ms
-per face, dominated by the embedding pass. Note a serial sink self-limits to
-one in-flight request, so it drops frames rather than saturating the server.*
+*Expect tens of milliseconds per frame (measured: ~12/104/141 ms for
+0/1/2 faces). A function-based recognizer measured ~195/555/900 ms on the
+same test - that gap is the price and the payoff of serverless, made
+visible.*
 
 ---
 
-## Module 5 — Momento as a streaming origin (45 min)
+## Module 5 - Momento as a streaming origin (45 min, optional)
 
-Every cache item is URL-addressable, so a cache **is** an HTTP origin. The HLS
-playlist and segments are just cache items; TTL is the garbage collector.
+Every cache item is URL-addressable, so a cache **is** an HTTP origin. The
+HLS playlist and segments are just cache items; TTL is the garbage
+collector.
 
 **Exercise 5**
 > **Prompt:** "Publish my ffmpeg stream as HLS directly to Momento as origin:
@@ -206,57 +258,57 @@ use the curl-loop fallback in the `momento-streaming-origin` skill.
 
 ---
 
-## Module 6 — Enrollment without redeploy (30 min)
+## Module 6 - Enrollment (15 min)
 
-**Exercise 6**
-> **Prompt:** "Write a second Momento Function `add-face` that takes a JPEG
-> body plus `?name=<person>`, detects the largest face, embeds it, and appends
-> it to `faces-library.json` in the cache. Then confirm my face-detect function
-> recognizes the new person on the very next invoke, with no redeploy."
+Enrollment here is just detect + embed + HSET - nearly free. Notice how
+the properties moved: a serverless recognizer needs a library-in-cache
+design to add people without redeploying; locally there is nothing to
+redeploy, but only THIS machine learns the face. Neither is better; they
+answer different questions.
 
-⚠️ **Known blocker — request before the workshop:** a 28 MB wasm (13.6 MB of
-embedded ONNX) exceeds the default ~4 MB function memory budget — every invoke
-returns 502 *"Function memory limit exceeded"*. Ask Momento support to raise
-your function memory limit for the workshop account *before* Module 6.
-Adding `memory_limit_mb` to the manage PUT is **untested** — if you verify it
-works, update this syllabus.
+> **Prompt:** "Add an `enroll <image> <name>` subcommand: detect the
+> largest face, embed it, HSET it into the valkey index, and prove the
+> very next `recognize` run names that person. Support multiple entries
+> per person (face:<name>:<n> keys) - nearest entry wins."
 
 ---
 
-## Module 7 — Write the blog post (45 min)
+## Module 7 - Write the blog post (45 min)
 
-You built a face recognition service with no servers: models in wasm next to
-a cache, a library that updates without redeploys, live video recognized in
-flight. The last exercise is telling that story — and it doubles as review:
-you cannot explain the pipeline without actually understanding it.
+You built a system worth writing about: a wasm function on a cache, a
+native ML pipeline, a vector index, live video recognition. The last
+build exercise is telling that story - and it doubles as review: you
+cannot explain the pipeline without actually understanding it.
 
 **Exercise 7**
 > **Prompt:** "Write a blog post about what we built in this workshop, for an
 > engineer who has never used Momento. Pull every number from THIS session's
-> real measurements — deploy times, warm vs cold invoke latency, my measured
-> impostor/genuine cosine ranges and threshold, per-face latency, segment
-> sizes — not from the syllabus. Structure: the hook (what runs where, and
-> what is NOT running), the architecture in one diagram, how recognition
-> actually works (embeddings, not training), three things that went wrong and
-> what each taught us, and what we would build next. Include real commands
-> and responses where they carry the story. No em-dashes. Do not brag about
-> platform internals — write what a reader can use."
+> real measurements - deploy times, invoke latency, my measured
+> impostor/genuine cosine ranges and threshold, per-frame latency, KNN
+> distances - not from the syllabus. Structure: the hook (what runs where,
+> and what is NOT running), the architecture in one diagram, how recognition
+> actually works (embeddings, not training), a local-vs-serverless section
+> with numbers, three things that went wrong and what each taught us, and
+> what we would build next. Include real commands and responses where they
+> carry the story. No em-dashes. Do not brag about platform internals -
+> write what a reader can use."
 
 **What makes it good:**
-- Numbers from your session, not ours. If your cold invoke was 27 s, say
-  27 s — the reader trusts a measured number more than a round one.
-- The failures are the content. "502 memory limit exceeded" and the fix is
-  more useful to a reader than a screenshot of success.
-- One honest paragraph on limits (frontal-only detection, threshold measured
-  on your data, memory budget) beats a caveat-free victory lap.
+- Numbers from your session, not ours. The reader trusts a measured number
+  more than a round one.
+- The failures are the content. A resolver error and its fix is more
+  useful to a reader than a screenshot of success.
+- One honest paragraph on limits (frontal-only detection, threshold
+  measured on your data, single-machine recognizer) beats a caveat-free
+  victory lap.
 
 *Expect: the first draft overclaims and underspecifies. Ask the agent to
-fact-check its own draft against the session transcript — every number, every
-claim — before you call it done.*
+fact-check its own draft against the session transcript - every number,
+every claim - before you call it done.*
 
 ---
 
-## Module 8 — Reflect: interrogate what you built (30 min)
+## Module 8 - Reflect: interrogate what you built (30 min)
 
 You built it with an agent, which means you can build something without
 fully understanding it. This module closes that gap. The technique:
@@ -285,8 +337,19 @@ Run these one at a time. Do not skim the answers; argue with them.
 > Quiz me: 10 questions about what we built, one at a time, hardest
 > first. Wait for my answer before showing yours. Keep score honestly.
 
-> I will explain how a frame gets from ffmpeg to a name on screen. Point
+> I will explain how a frame gets from ffmpeg to a name in the log. Point
 > out everything I get wrong or skip. [then type your explanation]
+
+**Track-specific:**
+> We deployed one wasm function and ran the ML natively. Walk me through
+> what would change - and what would not - if the recognizer moved inside
+> a Momento Function. What does that say about where the real complexity
+> in this system lives?
+
+> Explain why valkey returns distance while our threshold was calibrated
+> as similarity, and what would have happened if we had used 0.30 as a
+> distance cutoff. What is the general lesson about porting numbers
+> between systems?
 
 **Invert it:**
 > If we rebuilt this from scratch tomorrow, what should we do differently?
@@ -303,18 +366,24 @@ understanding, found while it is still cheap to learn.*
 **Operational gotchas**
 | Symptom | Cause |
 |---|---|
-| 502 memory limit exceeded | decoded pixels or model size vs budget |
-| Bare 500, no message | wasm panic — configure topic logging early |
-| Env vars empty | misspelled field; must be `environment_variables` (PUT still returns 204) |
-| Recognition silently stops | library TTL expired → `library:0`, all faces unnamed |
-| `Argument list too long` | base64 inline in curl; use `--data-binary @file` |
+| `Argument list too long` on deploy | base64 inline in curl; use `--data-binary @file` |
+| Zero-arg handler will not compile | `invoke!` handlers must take the payload: `fn h(_p: Data)` |
+| No FT.* commands in valkey | plain valkey image; use `valkey/valkey-bundle` (search module) |
+| Valkey container will not start | host port taken; map another (`-p <free>:6379`) |
+| Rust valkey client will not compile | `redis` crate `Value` enum renamed across versions; pin and read your version's source |
+| Everything matches / nothing matches after porting | distance vs similarity convention; sim = 1 − dist |
+| Sidecar reports 0 faces every frame | relative model paths resolved from the wrong cwd |
+| ffmpeg "Failed to resolve hostname" (curl works) | static build resolver; use the curl-loop fallback |
 | ffmpeg exits at start | missing `-y`, prompting to overwrite |
-| No `drawtext` filter | static build without libfreetype; use frame mtime instead |
 | Detector panic | `min_face_size` < 20 |
 
-**Costs to keep in view:** each face-function deploy ships ~36 MB of base64,
-takes ~15 s, and cold invokes cost ~27 s. Deploy deliberately.
+**Serverless comparison (measured on a function-based build of the same
+recognizer):** per-face latency ~360 ms vs ~30 ms native; cold invoke ~27 s
+(13.6 MB model parse in wasm) vs ~50 ms native model load; in exchange the
+function version is a shared service any client can call, with the library
+updatable in the cache. The `face-recognition` skill documents that full
+recipe if you want to build it.
 
-**Not covered:** Tier B (landmark alignment for tilted/profile faces — Tier A
-is frontal only) · multiple photos per person · vector indexes beyond a few
-hundred identities · server-side concurrency limits.
+**Not covered:** landmark alignment for tilted/profile faces (detection is
+frontal-only) · HNSW tuning and vector-index scaling · running the
+recognizer as a shared service · server-side concurrency limits.

@@ -18,20 +18,16 @@ the knowledge it needs (the `skills/`), gives you the exercises
 
 ## Repo layout
 
-Two tracks share this repo:
-
-- **Full serverless track** (`SYLLABUS.md`): recognition runs inside a
-  Momento Function in wasm. The complete experience, including the
-  constraints that make it interesting. ~5.25 hours.
-- **Local track** (`SYLLABUS-LOCAL.md`): one hello-world Function for the
-  serverless taste, then recognition runs natively and a local Valkey
-  indexes the embeddings (real KNN vector search instead of brute force).
-  Simpler, faster (~4.25 hours), and it teaches the vector-index lesson
-  the full track only mentions. Needs Docker for Valkey.
+The workshop: one hello-world Momento Function for the serverless
+foundation, then face recognition running natively with a local Valkey
+indexing the embeddings (real KNN vector search), live-video recognition,
+and optionally Momento as the HLS streaming origin. Validated end to end
+by autonomous agent runs. (Want recognition running *inside* a Momento
+Function instead? The `face-recognition` skill documents that full
+recipe as an extension.)
 
 ```
-SYLLABUS.md          the full serverless workshop: 8 modules with prompts and timings
-SYLLABUS-LOCAL.md    the local track: native recognition + Valkey vector index
+SYLLABUS.md          the workshop: 9 modules with prompts, timings, expected results
 PROMPTS.md           all prompts in one copy-paste sheet
 skills/              agent reference skills (install into your agent, step 4)
   momento-functions/         write, deploy, debug wasm functions
@@ -165,33 +161,30 @@ Or hand it to the agent (the Module 0 prompt):
 
 ### 7. Run the workshop
 
-Open the syllabus for the track you chose above (`SYLLABUS.md` for the
-full serverless track, `SYLLABUS-LOCAL.md` for the local track) and work
-through the modules in order, pasting each prompt into your agent.
-`PROMPTS.md` collects the main-track prompts in one place; local-track
-prompts live inline in `SYLLABUS-LOCAL.md`. Every module ends with
-checks, so you always know your build works before moving on.
+Open `SYLLABUS.md` and work through the modules in order, pasting each
+prompt into your agent (`PROMPTS.md` collects them all in one sheet).
+Every module ends with checks, so you always know your build works
+before moving on.
 
 | Module | What you build | Time |
 |---|---|---|
-| 0 | Setup smoke test | 15 min |
+| 0 | Setup: Momento smoke test + local Valkey | 20 min |
 | 1 | Hello-world wasm function | 30 min |
-| 2 | Face pipeline + threshold calibration (offline) | 60 min |
-| 3 | Deploy the recognizer + test ladder | 45 min |
-| 4 | Live video recognition (ffmpeg frame tap) | 45 min |
-| 5 | Momento as the HLS streaming origin | 45 min |
-| 6 | Enrollment with no redeploy | 30 min |
+| 2 | Face pipeline + threshold calibration (native) | 60 min |
+| 3 | Valkey embeddings index + KNN recognizer | 45 min |
+| 4 | Live video recognition (ffmpeg frame tap) | 40 min |
+| 5 | Momento as the HLS streaming origin (optional) | 45 min |
+| 6 | Enrollment (multiple photos per person) | 15 min |
 | 7 | Write the blog post | 45 min |
+| 8 | Reflect: interrogate what you built | 30 min |
 
-Full run: ~5.25 hours nominal; plan a day, or two half days split after
-Module 3.
+Core run (0-4, 6, 7): ~4.25 hours. Everything including the optional
+streaming module and the reflection wrap-up: ~5.5 hours. Plan a day, or
+two half days split after Module 3.
 
-**Short on time (2 hours)?** Do 0, 1, 2 (with the provided `faces/`
-instead of hunting photos), and 3. Watch 4-5 as a demo; take 6-7 home.
-
-**Before a group workshop:** ask Momento support to raise the function
-memory limit on the workshop account. The face function embeds a 13.6 MB
-model and exceeds the default budget; Module 6 blocks on this.
+**Short on time (2 hours)?** Do 0, 1, and 2-3 compressed (the shipped
+`faces/` and `faces-library.json` let you skip photo hunting and even
+library building). Watch 4-5 as a demo; take 6-8 home.
 
 ## Notes
 
