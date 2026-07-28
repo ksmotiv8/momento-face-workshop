@@ -1,6 +1,8 @@
 # Prompt Sheet
 
-Every workshop prompt in one place, in order (matching `SYLLABUS.md`).
+The workshop prompts in one place, in order (matching `SYLLABUS.md`;
+Module 7 lists the core reflect prompts, with the full set in the
+syllabus).
 Paste them into your coding agent one at a time; read what comes back
 before moving on. Replace `<cache>`, `<endpoint>`, and `<port>` with your
 values. Other angle-bracket tokens inside prompts (like `<name>` in the
@@ -21,18 +23,7 @@ Two habits that make these work:
 > confirm my local valkey at port `<port>` has the search module loaded.
 > Never echo the key.
 
-## Module 1 - Hello World function
-
-> Create a Rust Momento Function that returns 'hello world' as a plain
-> string. Build for wasm32-wasip2, deploy to cache `<cache>` as `hello`,
-> and invoke it to prove it works. Put the deploy+invoke steps in a
-> reusable script that reads the key from `~/.mo-creds` inside the script.
-
-> Change the function to accept `{"name":"..."}` and return
-> `{"message":"Hello <name>"}` using `Json<T>` for request and response.
-> Redeploy and test with my name.
-
-## Module 2 - Face pipeline, native
+## Module 1 - Face pipeline, native
 
 > Set up a Rust workspace with a shared `facecore` crate
 > (detect -> crop 112x112 chip -> embed -> L2-normalize -> cosine match)
@@ -47,7 +38,7 @@ Two habits that make these work:
 > in `faces/probes`). Report both ranges and recommend a threshold in the
 > gap.
 
-## Module 3 - Valkey as the embeddings index
+## Module 2 - Valkey as the embeddings index
 
 > Write a `libbuild index` subcommand that loads `faces-library.json`
 > into my local valkey as an HNSW COSINE index (FT.CREATE, one HSET per
@@ -62,7 +53,7 @@ Two habits that make these work:
 > full probe set from `faces/probes` and report a table: genuine pairs
 > named, multi-face photos counted correctly, strangers unmatched.
 
-## Module 4 - Live video, local recognition
+## Module 3 - Live video, local recognition
 
 > Build a simulated camera stream with ffmpeg: `testsrc2` background with
 > two known face images overlaid on co-prime periods (so they appear
@@ -79,7 +70,7 @@ Two habits that make these work:
 > as JSON to my Momento cache under `faces.json` (ttl 60) so a remote
 > dashboard could poll it. Report the latency distribution.
 
-## Module 5 - Momento as streaming origin (optional)
+## Module 4 - Momento as streaming origin (optional)
 
 > Publish my ffmpeg stream as HLS directly to Momento as origin: 1 s
 > segments PUT to cache keys with `-method PUT -http_persistent 1`, the
@@ -96,31 +87,32 @@ resolve hostname" while curl to the same host works, the ffmpeg build's
 resolver is broken (common in static builds) - use the curl-loop
 fallback in the momento-streaming-origin skill.
 
-## Module 6 - Enrollment
+## Module 5 - Enrollment
 
 > Add a `libbuild enroll <image> <name>` subcommand: detect the largest face,
 > embed it, HSET it into the valkey index, and prove the very next
 > `recognize` run names that person. Support multiple entries per person
 > (face:<name>:<n> keys) - nearest entry wins.
 
-## Module 7 - The blog post
+## Module 6 - The blog post
 
 > Write a blog post about what we built in this workshop, for an engineer
-> who has never used Momento. Pull every number from THIS session's real
-> measurements - deploy times, invoke latency, my measured
-> impostor/genuine cosine ranges and threshold, per-frame latency, KNN
-> distances - not from the syllabus. Structure: the hook (what runs
-> where, and what is NOT running), the architecture in one diagram, how
-> recognition actually works (embeddings, not training), a
-> local-vs-serverless section with numbers, three things that went wrong
-> and what each taught us, and what we would build next. Include real
-> commands and responses where they carry the story. No em-dashes. Do not
-> brag about platform internals - write what a reader can use.
+> who has never used Momento or a vector index. Pull every number from
+> THIS session's real measurements - my measured impostor/genuine cosine
+> ranges and threshold, KNN distances, per-frame latency - not from the
+> syllabus. Structure: the hook (what runs where, and what is NOT
+> running), the architecture in one diagram, how recognition actually
+> works (embeddings, not training), a local-vs-serverless section (use
+> the syllabus Reference numbers for the serverless side, or your own if
+> you built the function-based recognizer from the face-recognition skill), three things that went wrong and what each
+> taught us, and what we would build next. Include real commands and
+> responses where they carry the story. No em-dashes. Do not brag about
+> platform internals - write what a reader can use.
 
-## Module 8 - Reflect
+## Module 7 - Reflect
 
 Run these one at a time; argue with the answers. The full set with
-context is in `SYLLABUS.md` Module 8.
+context is in `SYLLABUS.md` Module 7.
 
 > Walk me through every design decision we made that I did not explicitly
 > ask for. For each: what was the alternative, and why did you pick this?
@@ -135,15 +127,29 @@ context is in `SYLLABUS.md` Module 8.
 > Quiz me: 10 questions about what we built, one at a time, hardest
 > first. Wait for my answer before showing yours. Keep score honestly.
 
-> We deployed one wasm function and ran the ML natively. Walk me through
-> what would change - and what would not - if the recognizer moved inside
-> a Momento Function. What does that say about where the real complexity
-> in this system lives?
+> Our ML runs natively on this machine. Walk me through what would
+> change - and what would not - if the recognizer moved inside a Momento
+> Function as a shared service. What does that say about where the real
+> complexity in this system lives?
 
 > Explain why valkey returns distance while our threshold was calibrated
 > as similarity, and what would have happened if we had used 0.30 as a
 > distance cutoff. What is the general lesson about porting numbers
 > between systems?
+
+## Take-home - Hello World Momento Function
+
+Needs `rustup target add wasm32-wasip2` and the `momento-functions`
+skill loaded.
+
+> Create a Rust Momento Function that returns 'hello world' as a plain
+> string. Build for wasm32-wasip2, deploy to cache `<cache>` as `hello`,
+> and invoke it to prove it works. Put the deploy+invoke steps in a
+> reusable script that reads the key from `~/.mo-creds` inside the script.
+
+> Change the function to accept `{"name":"..."}` and return
+> `{"message":"Hello <name>"}` using `Json<T>` for request and response.
+> Redeploy and test with my name.
 
 ## When things go sideways
 

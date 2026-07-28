@@ -3,11 +3,11 @@
 Test data for the recognition pipeline:
 
 - `portraits/` - one photo per identity. Used to BUILD the face library
-  (Module 2). Filenames become the identity names: strip the extension
+  (Module 1). Filenames become the identity names: strip the extension
   and replace underscores with spaces (`Barack_Obama.jpg` -> the name
   "Barack Obama"). Apply that normalization in your builder or your
   names will not match the shipped library's.
-- `probes/` - photos used to TEST recognition (Modules 2-3): second
+- `probes/` - photos used to TEST recognition (Modules 1-2): second
   photos of library identities (genuine pairs), multi-face photos, and
   strangers who should stay unmatched. Note: Alex Lacamoire has no
   second photo here, so he contributes no genuine pair to calibration -
@@ -17,8 +17,8 @@ Test data for the recognition pipeline:
   ~31 KB). Schema: a bare JSON array (no wrapper object) of entries
   `{"name": "First Last", "e": [512 floats]}` - names use spaces, per
   the filename normalization above. Two uses: feed it straight to
-  `libbuild index` (Module 3) to load Valkey without finishing
-  Module 2's library build, or diff it against your own `build` output
+  `libbuild index` (Module 2) to load Valkey without finishing
+  Module 1's library build, or diff it against your own `build` output
   to verify your pipeline. Caveat: embeddings only compare if your
   preprocessing matches the skill's recipe exactly (RGB, +25% square
   crop, 112x112 Triangle resize, (x-127.5)/127.5). If your genuine-pair
@@ -41,16 +41,16 @@ These images are NOT covered by the repository's MIT license.
 
 It is a train/test split, not a limit of the pipeline. `portraits/`
 becomes the library; the second photos live in `probes/` as HELD-OUT
-genuine pairs, which is what makes the Module 2 threshold calibration
+genuine pairs, which is what makes the Module 1 threshold calibration
 honest (same-person similarity measured across different photos). If the
 extra photos joined the library, probing with them would test on training
 data and every score would be a meaningless ~0.98.
 
 Matching itself handles multiple entries per person fine - the nearest
 entry wins - and production libraries should carry 2-3 photos per person
-(or a centroid) for pose/lighting robustness. Module 6's `enroll`
+(or a centroid) for pose/lighting robustness. Module 5's `enroll`
 subcommand already supports this (`face:<name>:<n>` keys). The one gap
-left as a stretch exercise: teach the Module 2 library BUILDER a naming
+left as a stretch exercise: teach the Module 1 library BUILDER a naming
 convention so `Name_2.jpg` maps to "Name" rather than a new person
 called "Name 2".
 
@@ -59,4 +59,4 @@ called "Name 2".
 The workshop is more fun with faces you know. Replace or extend these
 directories with your own photos (one clear, mostly frontal face per
 portrait; a couple of different shots per person for probes) and the
-exercises work unchanged - Module 6 lets you enroll yourself live.
+exercises work unchanged - Module 5 lets you enroll yourself live.

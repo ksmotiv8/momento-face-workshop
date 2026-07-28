@@ -1,13 +1,14 @@
 # Momento Face Recognition Workshop
 
-Build a face recognition system with a coding agent: deploy a WebAssembly
-function to Momento (your serverless foundation), run a native ML pipeline
-that detects and embeds faces, index the embeddings in a local Valkey with
-real KNN vector search, recognize faces in live video, and optionally
-stream that video through Momento as a serverless HLS origin.
+Build a face recognition system with a coding agent: a native ML pipeline
+detects and embeds faces, a local Valkey indexes the embeddings with real
+KNN vector search, live video gets recognized in flight, and results land
+in a Momento cache - which can optionally serve the video itself as a
+serverless HLS origin. A hello-world Momento Function ships as a take-home
+for the serverless-compute side.
 
 ```
-camera / test stream ──ffmpeg──► Momento cache (HLS origin + results, optional)
+camera / test stream ──ffmpeg──► Momento cache (results + optional HLS origin)
                         │
                         └─frames──► recognize (native binary)
                                     detect -> embed -> FT.SEARCH KNN -> names
@@ -21,16 +22,15 @@ the knowledge it needs (the `skills/`), gives you the exercises
 
 ## Repo layout
 
-The workshop: one hello-world Momento Function for the serverless
-foundation, then face recognition running natively with a local Valkey
+The workshop: face recognition running natively with a local Valkey
 indexing the embeddings (real KNN vector search), live-video recognition,
-and optionally Momento as the HLS streaming origin. Validated end to end
-by autonomous agent runs. (Want recognition running *inside* a Momento
-Function instead? The `face-recognition` skill documents that full
-recipe as an extension.)
+and optionally Momento as the HLS streaming origin. A hello-world Momento
+Function is a take-home follow-up. Validated end to end by autonomous
+agent runs. (Want recognition running *inside* a Momento Function? The
+`face-recognition` skill documents that full recipe as an extension.)
 
 ```
-SYLLABUS.md          the workshop: 9 modules with prompts, timings, expected results
+SYLLABUS.md          the workshop: 8 modules + a take-home, with prompts and timings
 PROMPTS.md           all prompts in one copy-paste sheet
 skills/              agent reference skills (install into your agent, step 4)
   momento-functions/         write, deploy, debug wasm functions
@@ -61,28 +61,28 @@ chmod 600 ~/.mo-creds
    `https://api.cache.cell-4-us-west-2-1.prod.a.momentohq.com`
    (other regions: https://docs.momentohq.com/platform/regions).
 
-The cache must exist before anything else works: functions deploy onto a
-cache, and all data lives at `/cache/<cache>?key=...`.
+The cache must exist before anything else works: all data lives at
+`/cache/<cache>?key=...`, and the take-home function deploys onto it.
 
 ### 2. Install the tools
 
 ```bash
-# Rust + the wasm target (functions compile to wasm32-wasip2)
+# Rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-rustup target add wasm32-wasip2
+rustup target add wasm32-wasip2   # only needed for the take-home function
 
 # Docker (runs the local Valkey; the workshop uses the valkey/valkey-bundle
 # image because it includes the search module - plain valkey has no FT.*)
 # macOS: https://docs.docker.com/desktop/   Linux: your distro's docker packages
 
-# ffmpeg (modules 4-5) - use a full build, not a static one
+# ffmpeg (modules 3-4) - use a full build, not a static one
 brew install ffmpeg            # macOS
 sudo apt install ffmpeg        # Debian/Ubuntu
 sudo dnf install ffmpeg        # RHEL/Amazon Linux (enable EPEL/RPM Fusion first)
 ```
 
 Why not a static ffmpeg build: common static builds (e.g. the johnvansickle
-tarballs) ship a broken DNS/TLS resolver and fail Module 5's direct HTTPS PUT
+tarballs) ship a broken DNS/TLS resolver and fail Module 4's direct HTTPS PUT
 with "Failed to resolve hostname ... System error" even though curl works. If
 a static build is all you can get, use the curl-loop fallback documented in
 the `momento-streaming-origin` skill.
@@ -132,7 +132,7 @@ convention, client version pinning, HLS quirks) the hard way.
 
 The two ML models are not in this repo (size and licensing). Download them
 once into a stable `models/` directory now; the crate the agent creates in
-Module 2 will reference them from there (e.g. `../models/`), so they
+Module 1 will reference them from there (e.g. `../models/`), so they
 survive any later restructuring:
 
 ```bash
@@ -178,28 +178,28 @@ before moving on.
 | Module | What you build | Time |
 |---|---|---|
 | 0 | Setup: Momento smoke test + local Valkey | 20 min |
-| 1 | Hello-world wasm function | 30 min |
-| 2 | Face pipeline + threshold calibration (native) | 60 min |
-| 3 | Valkey embeddings index + KNN recognizer | 45 min |
-| 4 | Live video recognition (ffmpeg frame tap) | 40 min |
-| 5 | Momento as the HLS streaming origin (optional) | 45 min |
-| 6 | Enrollment (multiple photos per person) | 15 min |
-| 7 | Write the blog post | 45 min |
-| 8 | Reflect: interrogate what you built | 30 min |
+| 1 | Face pipeline + threshold calibration (native) | 60 min |
+| 2 | Valkey embeddings index + KNN recognizer | 45 min |
+| 3 | Live video recognition (ffmpeg frame tap) | 40 min |
+| 4 | Momento as the HLS streaming origin (optional) | 45 min |
+| 5 | Enrollment (multiple photos per person) | 15 min |
+| 6 | Write the blog post | 45 min |
+| 7 | Reflect: interrogate what you built | 30 min |
+| Take-home | Hello-world wasm Momento Function | 30 min |
 
-Core run (0-4, 6, 7): ~4.25 hours. Everything including the optional
-streaming module and the reflection wrap-up: ~5.5 hours. Plan a day, or
-two half days split after Module 3.
+Core run (0-3, 5, 6): ~3.75 hours. Everything including the optional
+streaming module and the reflection wrap-up: ~5 hours. Plan a day with
+slack, or two half days split after Module 2.
 
-**Short on time (2 hours)?** Do 0, 1, and 2-3 compressed (the shipped
+**Short on time (2 hours)?** Do 0 and 1-2 compressed (the shipped
 `faces/` and `faces-library.json` let you skip photo hunting and even
-library building). Watch 4-5 as a demo; take 6-8 home.
+library building). Watch 3-4 as a demo; take 5-7 and the take-home home.
 
 ## Notes
 
 - `faces/` contains photos of public figures for pipeline testing only;
   see `faces/README.md` for sources and terms. Swap in your own photos to
-  make Module 6 (enrolling yourself) more fun.
+  make Module 5 (enrolling yourself) more fun.
 - No credentials live in this repo, and none should ever be committed.
   Keys belong in `~/.mo-creds` (mode 600).
 - Code in this repo is MIT licensed (`LICENSE`). The ML models and the
