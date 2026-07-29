@@ -69,6 +69,31 @@ first (`docker ps`, or `lsof -iTCP:6379 -sTCP:LISTEN` on macOS,
 > confirm my local valkey at port 6379 has the search module loaded.
 > Never echo the key."
 
+**Exercise 0b - register your crew (optional, +10 min)**
+
+The shipped `faces/` set works, but the workshop is better with people in
+the room. Go take pictures: 3-5 willing people around you (ask first),
+one clear frontal shot each. Phone camera then AirDrop/USB, or the
+webcam:
+
+```bash
+ffmpeg -f avfoundation -i "0" -frames:v 1 First_Last.jpg   # macOS
+ffmpeg -f v4l2 -i /dev/video0 -frames:v 1 First_Last.jpg   # Linux
+```
+
+Name each file `First_Last.jpg` and drop it in `faces/portraits/` - the
+filename becomes the label ("First Last"). Take a SECOND, different shot
+of each person into `faces/probes/` so they contribute genuine pairs to
+your Module 1 calibration. Nothing else changes: Module 1 builds them
+into the library, Module 2 indexes them, and in Module 3 they can walk in
+front of the camera and get named.
+
+> **Prompt:** "I added new photos to `faces/portraits` and `faces/probes`.
+> Check every new file: valid image, filename in `First_Last.jpg` form,
+> and no duplicate names. List what will become each person's label.
+> Face quality gets checked for real in Module 1's build - flag anything
+> that looks likely to fail (tiny file, screenshot, group shot)."
+
 ---
 
 ## Module 1 - Face pipeline, native (10 min)

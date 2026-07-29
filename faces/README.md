@@ -56,7 +56,9 @@ called "Name 2".
 
 ## Better: use your own
 
-The workshop is more fun with faces you know. Replace or extend these
-directories with your own photos (one clear, mostly frontal face per
-portrait; a couple of different shots per person for probes) and the
-exercises work unchanged - Module 5 lets you enroll yourself live.
+The workshop is more fun with faces you know - Exercise 0b in the
+syllabus walks through photographing people around you (with their
+permission), labeling the files, and dropping them here. One clear,
+mostly frontal face per portrait; a different second shot per person
+into `probes/` for genuine pairs. The exercises then work unchanged,
+and Module 5 lets you enroll more people live.

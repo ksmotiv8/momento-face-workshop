@@ -22,6 +22,14 @@ Two habits that make these work:
 > confirm my local valkey at port 6379 has the search module loaded.
 > Never echo the key.
 
+Optional (after photographing your crew into faces/, see Exercise 0b):
+
+> I added new photos to `faces/portraits` and `faces/probes`. Check every
+> new file: valid image, filename in `First_Last.jpg` form, and no
+> duplicate names. List what will become each person's label. Face
+> quality gets checked for real in Module 1's build - flag anything that
+> looks likely to fail (tiny file, screenshot, group shot).
+
 ## Module 1 - Face pipeline, native
 
 > Set up a Rust workspace with a shared `facecore` crate
