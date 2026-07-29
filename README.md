@@ -177,23 +177,24 @@ before moving on.
 
 | Module | What you build | Time |
 |---|---|---|
-| 0 | Setup: Momento smoke test + local Valkey | 20 min |
-| 1 | Face pipeline + threshold calibration (native) | 60 min |
-| 2 | Valkey embeddings index + KNN recognizer | 45 min |
-| 3 | Live video recognition (ffmpeg frame tap) | 40 min |
-| 4 | Momento as the HLS streaming origin (optional) | 45 min |
+| 0 | Setup: Momento smoke test + local Valkey | 10 min |
+| 1 | Face pipeline + threshold calibration (native) | 10 min |
+| 2 | Valkey embeddings index + KNN recognizer | 15 min |
+| 3 | Live video recognition (ffmpeg frame tap) | 15 min |
+| 4 | Momento as the HLS streaming origin (optional) | 15 min |
 | 5 | Enrollment (multiple photos per person) | 15 min |
-| 6 | Write the blog post | 45 min |
+| 6 | Write the blog post | 10 min |
 | 7 | Reflect: interrogate what you built | 30 min |
 | Take-home | Hello-world wasm Momento Function | 30 min |
 
-Core run (0-3, 5, 6): ~3.75 hours. Everything including the optional
-streaming module and the reflection wrap-up: ~5 hours. Plan a day with
-slack, or two half days split after Module 2.
+Core run (0-3, 5, 6): ~75 minutes. Everything including the optional
+streaming module and the reflection wrap-up: ~2 hours. It fits a single
+2-hour block; the timings assume the skills are registered and the setup
+steps above are done before the clock starts.
 
-**Short on time (2 hours)?** Do 0 and 1-2 compressed (the shipped
-`faces/` and `faces-library.json` let you skip photo hunting and even
-library building). Watch 3-4 as a demo; take 5-7 and the take-home home.
+**Short on time (1 hour)?** Do 0-2 (the shipped `faces/` and
+`faces-library.json` let you skip photo hunting and even library
+building). Watch 3-4 as a demo; take 5-7 and the take-home home.
 
 ## Notes
 

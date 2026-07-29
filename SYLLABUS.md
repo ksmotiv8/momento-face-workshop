@@ -12,9 +12,10 @@ Rust · Docker (for Valkey) · ffmpeg (modules 3-4, full build not static) ·
 the two models (README step 5) · your HTTP endpoint, e.g.
 `https://api.cache.cell-4-us-west-2-1.prod.a.momentohq.com`
 
-Core path: Modules 0-3, 5, and 6, about 3.75 hours. Module 4 is optional;
-Module 7 is a recommended 30-minute wrap-up. The take-home adds ~30 min
-whenever you like.
+Core path: Modules 0-3, 5, and 6, about 75 minutes. Module 4 is optional;
+Module 7 is a recommended 30-minute wrap-up. Everything, including the
+optional streaming module and the reflection, fits in ~2 hours. The
+take-home adds ~30 min whenever you like.
 
 ## Skills
 
@@ -37,7 +38,7 @@ Each exercise has a **prompt** - paste it into your coding agent.
 
 ---
 
-## Module 0 - Setup (20 min)
+## Module 0 - Setup (10 min)
 
 Momento side: create the cache first. It carries the live recognition
 results in Module 3, serves as the streaming origin in Module 4, and the
@@ -71,7 +72,7 @@ note whatever you picked.
 
 ---
 
-## Module 1 - Face pipeline, native (60 min)
+## Module 1 - Face pipeline, native (10 min)
 
 No training happens. A pretrained ArcFace model maps any face to a 512-D
 vector; "learning" a person is storing one vector with a name.
@@ -116,7 +117,7 @@ memory budget.
 
 ---
 
-## Module 2 - Valkey as the embeddings index (45 min)
+## Module 2 - Valkey as the embeddings index (15 min)
 
 Replace brute-force matching with a vector index. Embeddings are stored
 as HASH fields (packed little-endian float32) and searched with KNN:
@@ -162,7 +163,7 @@ recognition breaks silently in one direction or the other.*
 
 ---
 
-## Module 3 - Live video, local recognition (40 min)
+## Module 3 - Live video, local recognition (15 min)
 
 One ffmpeg process, two outputs from a `split`: an encoded stream plus a
 2 fps JPEG tap. `-update 1 -atomic_writing 1` rewrites **one** file
@@ -200,7 +201,7 @@ the price and the payoff of a shared service, made visible.*
 
 ---
 
-## Module 4 - Momento as a streaming origin (45 min, optional)
+## Module 4 - Momento as a streaming origin (15 min, optional)
 
 Every cache item is URL-addressable, so a cache **is** an HTTP origin. The
 HLS playlist and segments are just cache items; TTL is the garbage
@@ -249,7 +250,7 @@ answer different questions.
 
 ---
 
-## Module 6 - Write the blog post (45 min)
+## Module 6 - Write the blog post (10 min)
 
 You built a system worth writing about: a native ML pipeline, a real
 vector index, live video recognition, results in a serverless cache. The
