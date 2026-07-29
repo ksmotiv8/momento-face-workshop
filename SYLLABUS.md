@@ -55,19 +55,18 @@ Valkey side: run the bundle image, which includes the `search` module
 (plain valkey has no FT.* commands):
 
 ```bash
-ss -ltn | grep -E ':(6379|16379)\b'   # Linux: anything printed = port taken
-# macOS: lsof -iTCP:6379 -sTCP:LISTEN
-VALKEY_PORT=6379                      # set to any free host port
-docker run -d --name valkey --rm -p ${VALKEY_PORT}:6379 valkey/valkey-bundle
+docker run -d --name valkey --rm -p 6379:6379 valkey/valkey-bundle
 docker exec valkey valkey-cli MODULE LIST | grep -A1 search   # expect: search
 ```
 
-Every later valkey command in this workshop uses this same host port, so
-note whatever you picked.
+The workshop uses port 6379 throughout. If the run fails with "address
+already in use", something else on your machine holds 6379 - stop it
+first (`docker ps`, or `lsof -iTCP:6379 -sTCP:LISTEN` on macOS,
+`ss -ltnp | grep 6379` on Linux).
 
 > **Prompt:** "Verify my setup: Momento PUT/GET smoke test with the key in
 > `~/.mo-creds` against cache `<cache>` at endpoint `<endpoint>`, and
-> confirm my local valkey at port `<port>` has the search module loaded.
+> confirm my local valkey at port 6379 has the search module loaded.
 > Never echo the key."
 
 ---
@@ -388,7 +387,7 @@ wasm, library in the cache, a shared service any client can call.
 | Symptom | Cause |
 |---|---|
 | No FT.* commands in valkey | plain valkey image; use `valkey/valkey-bundle` (search module) |
-| Valkey container will not start | host port taken; map another (`-p <free>:6379`) |
+| Valkey container will not start ("address already in use") | something else holds 6379; find and stop it |
 | Rust valkey client will not compile | `redis` crate `Value` enum renamed across versions; pin and read your version's source |
 | Everything matches / nothing matches after porting | distance vs similarity convention; sim = 1 - dist |
 | Sidecar reports 0 faces every frame | relative model paths resolved from the wrong cwd |

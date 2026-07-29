@@ -4,8 +4,7 @@ The workshop prompts in one place, in order (matching `SYLLABUS.md`;
 Module 7 lists the core reflect prompts, with the full set in the
 syllabus).
 Paste them into your coding agent one at a time; read what comes back
-before moving on. Replace `<cache>`, `<endpoint>`, and `<port>` with your
-values. Other angle-bracket tokens inside prompts (like `<name>` in the
+before moving on. Replace `<cache>` and `<endpoint>` with your values. Other angle-bracket tokens inside prompts (like `<name>` in the
 greeting or enroll exercises) are program inputs - leave them to the
 agent.
 
@@ -20,7 +19,7 @@ Two habits that make these work:
 
 > Verify my setup: Momento PUT/GET smoke test with the key in
 > `~/.mo-creds` against cache `<cache>` at endpoint `<endpoint>`, and
-> confirm my local valkey at port `<port>` has the search module loaded.
+> confirm my local valkey at port 6379 has the search module loaded.
 > Never echo the key.
 
 ## Module 1 - Face pipeline, native
