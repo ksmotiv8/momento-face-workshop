@@ -32,6 +32,7 @@ agent runs. (Want recognition running *inside* a Momento Function? The
 ```
 SYLLABUS.md          the workshop: 8 modules + a take-home, with prompts and timings
 PROMPTS.md           all prompts in one copy-paste sheet
+VECTOR-SEARCH.md     a two-minute visual primer on vector search
 skills/              agent reference skills (install into your agent, step 4)
   momento-functions/         write, deploy, debug wasm functions
   momento-streaming-origin/  the cache as data store and HLS origin

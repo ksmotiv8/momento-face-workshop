@@ -118,6 +118,9 @@ memory budget.
 
 ## Module 2 - Valkey as the embeddings index (15 min)
 
+New to vector search? Read [VECTOR-SEARCH.md](VECTOR-SEARCH.md) first;
+it is a two-minute picture of what this module builds.
+
 Replace brute-force matching with a vector index. Embeddings are stored
 as HASH fields (packed little-endian float32) and searched with KNN:
 
