@@ -236,11 +236,16 @@ use the curl-loop fallback in the `momento-streaming-origin` skill.
 
 ## Module 5 - Enrollment (15 min)
 
-Enrollment here is just detect + embed + HSET - nearly free. Notice how
-the properties moved: a serverless recognizer needs a library-in-cache
-design to add people without redeploying; locally there is nothing to
-redeploy, but only THIS machine learns the face. Neither is better; they
-answer different questions.
+Enrollment here is just detect + embed + HSET: under 50 ms of compute,
+no retraining (the model already maps any face to a vector - "learning"
+a person is writing one row), and no redeploy or index rebuild - the
+very next query can match the new person. Notice how the properties
+moved: a serverless recognizer needs a library-in-cache design to add
+people without redeploying; locally you get cheap enrollment without
+designing for it, but only THIS machine learns the face. Neither is
+better; they answer different questions. The cost that remains is
+quality: a bad enrollment photo (blurry, wrong person in frame) silently
+poisons future matches.
 
 > **Prompt:** "Add a `libbuild enroll <image> <name>` subcommand: detect the
 > largest face, embed it, HSET it into the valkey index, and prove the
