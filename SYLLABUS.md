@@ -201,6 +201,17 @@ zero faces with the error hidden in swallowed stderr.
 measured ~195/555/900 ms on the same test (see Reference) - that gap is
 the price and the payoff of a shared service, made visible.*
 
+**Exercise 3c - your real camera (optional, needs a webcam)**
+> **Prompt:** "Swap the simulated stream for my real camera: same split,
+> same 2 fps tap, same sidecar, but the input is my webcam (avfoundation
+> on macOS, v4l2 on Linux - the ffmpeg skill has the exact flags). Show
+> me the sidecar log while I sit in front of the camera."
+
+Your face will come back as an unmatched stranger, which is correct: the
+library does not know you yet. Leave the stream running - in Module 5
+you enroll yourself, and the very next frame names you. That moment is
+the whole workshop in two seconds.
+
 ---
 
 ## Module 4 - Momento as a streaming origin (15 min, optional)
@@ -254,6 +265,11 @@ poisons future matches.
 > largest face, embed it, HSET it into the valkey index, and prove the
 > very next `recognize` run names that person. Support multiple entries
 > per person (face:<name>:<n> keys) - nearest entry wins."
+
+If you did Exercise 3c, enroll yourself from a webcam frame
+(`ffmpeg -f avfoundation -i "0" -frames:v 1 me.jpg` on macOS,
+`-f v4l2 -i /dev/video0` on Linux) and watch the live sidecar switch
+from "unknown" to your name.
 
 ---
 

@@ -69,6 +69,13 @@ Two habits that make these work:
 > as JSON to my Momento cache under `faces.json` (ttl 60) so a remote
 > dashboard could poll it. Report the latency distribution.
 
+Optional, needs a webcam:
+
+> Swap the simulated stream for my real camera: same split, same 2 fps
+> tap, same sidecar, but the input is my webcam (avfoundation on macOS,
+> v4l2 on Linux - the ffmpeg skill has the exact flags). Show me the
+> sidecar log while I sit in front of the camera.
+
 ## Module 4 - Momento as streaming origin (optional)
 
 > Publish my ffmpeg stream as HLS directly to Momento as origin: 1 s
