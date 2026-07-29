@@ -62,7 +62,9 @@ docker exec valkey valkey-cli MODULE LIST | grep -A1 search   # expect: search
 The workshop uses port 6379 throughout. If the run fails with "address
 already in use", something else on your machine holds 6379 - stop it
 first (`docker ps`, or `lsof -iTCP:6379 -sTCP:LISTEN` on macOS,
-`ss -ltnp | grep 6379` on Linux).
+`ss -ltnp | grep 6379` on Linux). If you truly cannot free it, map
+another port and tell your agent ONCE, up front - every valkey command in
+Modules 2 and 5 must then carry that override.
 
 > **Prompt:** "Verify my setup: Momento PUT/GET smoke test with the key in
 > `~/.mo-creds` against cache `<cache>` at endpoint `<endpoint>`, and
@@ -465,6 +467,7 @@ wasm, library in the cache, a shared service any client can call.
 | Sidecar reports 0 faces every frame | relative model paths resolved from the wrong cwd |
 | ffmpeg "Failed to resolve hostname" (curl works) | static build resolver; use the curl-loop fallback |
 | ffmpeg exits at start | missing `-y`, prompting to overwrite |
+| Stream ignores `-t` and never stops | with multiple outputs, `-t` after the last output limits only that output; put `-t` before each output |
 | Detector panic | `min_face_size` < 20 |
 | `Argument list too long` on function deploy (take-home) | base64 inline in curl; use `--data-binary @file` |
 | Zero-arg handler will not compile (take-home) | `invoke!` handlers must take the payload: `fn h(_p: Data)` |

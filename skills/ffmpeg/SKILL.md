@@ -244,3 +244,6 @@ Symptom map:
   `aresample=async`, or ignore if ticks are tiny and playback is clean.
 - Players glitch on segments shipped by a directory-watching uploader:
   partial segments; add `-hls_flags +temp_file`.
+- Multi-output command ignores `-t` and never stops: `-t` after the last
+  output limits only THAT output. Put `-t` before each output, or use it
+  as an input option before `-i`.

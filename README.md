@@ -132,9 +132,10 @@ convention, client version pinning, HLS quirks) the hard way.
 ### 5. Download the models
 
 The two ML models are not in this repo (size and licensing). Download them
-once into a stable `models/` directory now; the crate the agent creates in
-Module 1 will reference them from there (e.g. `../models/`), so they
-survive any later restructuring:
+once into a stable `models/` directory now. Have your tools take model
+paths as flags and pass ABSOLUTE paths: cwd-relative defaults like
+`../models/` break the moment a different process (the Module 3 sidecar)
+or a different working directory invokes the binary.
 
 ```bash
 mkdir -p models
