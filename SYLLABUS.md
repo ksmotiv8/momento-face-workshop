@@ -237,6 +237,25 @@ library does not know you yet. Leave the stream running - in Module 5
 you enroll yourself, and the very next frame names you. That moment is
 the whole workshop in two seconds.
 
+**Exercise 3d - feedback: make recognition announce itself (optional)**
+
+So far a recognition is a log line and a cache key nobody reads. Fix
+that with push instead of poll: Momento Topics. Note the pairing -
+`faces.json` in the cache is current STATE (poll it), the topic carries
+EVENTS (subscribe to it). Most real systems need both.
+
+> **Prompt:** "Extend the sidecar: when a NEW person appears (a name not
+> present in the previous frame - transitions only, not every frame),
+> publish a small JSON event to Momento topic `face-events` via
+> POST `/topics/<cache>/face-events`. Then show me feedback two ways:
+> (1) `momento topic subscribe` in a second terminal printing events
+> live; (2) pipe each arriving event into text-to-speech (`say` on
+> macOS, `espeak` on Linux) so the room hears 'Welcome, <name>' when
+> someone steps in front of the camera."
+
+With 0b and 3c done, this is the demo finale: a colleague walks up,
+the terminal prints their name, and the laptop greets them out loud.
+
 ---
 
 ## Module 4 - Momento as a streaming origin (15 min, optional)

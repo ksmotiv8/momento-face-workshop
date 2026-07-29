@@ -84,6 +84,17 @@ Optional, needs a webcam:
 > v4l2 on Linux - the ffmpeg skill has the exact flags). Show me the
 > sidecar log while I sit in front of the camera.
 
+Optional feedback loop (Topics):
+
+> Extend the sidecar: when a NEW person appears (a name not present in
+> the previous frame - transitions only, not every frame), publish a
+> small JSON event to Momento topic `face-events` via
+> POST `/topics/<cache>/face-events`. Then show me feedback two ways:
+> (1) `momento topic subscribe` in a second terminal printing events
+> live; (2) pipe each arriving event into text-to-speech (`say` on
+> macOS, `espeak` on Linux) so the room hears 'Welcome, <name>' when
+> someone steps in front of the camera.
+
 ## Module 4 - Momento as streaming origin (optional)
 
 > Publish my ffmpeg stream as HLS directly to Momento as origin: 1 s
