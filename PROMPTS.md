@@ -36,9 +36,13 @@ Optional (after photographing your crew into faces/, see Exercise 0b):
 > (detect -> crop 112x112 chip -> embed -> L2-normalize -> cosine match)
 > and a host CLI `libbuild` with subcommands `build` (portraits dir ->
 > library JSON), `probe` (score images against the library) and `pairs`
-> (all-pairs cosines). Use rustface for detection and tract-onnx for the
-> ArcFace embedder. Verify it works end to end on one portrait before
-> building out the rest.
+> (all-pairs cosines). Labels come from filenames: strip the extension,
+> drop a trailing numeric suffix, replace underscores with spaces - so
+> `Barack_Obama.jpg` and `Barack_Obama_2.jpg` are BOTH labeled 'Barack
+> Obama' (multiple library entries per person is supported; nearest
+> wins). Use rustface for detection and tract-onnx for the ArcFace
+> embedder. Verify it works end to end on one portrait before building
+> out the rest.
 
 > Build a library from the portraits in `faces/portraits`, then measure
 > impostor cosines (`pairs`) and genuine cosines (probe the second photos

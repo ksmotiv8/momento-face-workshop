@@ -2,11 +2,13 @@
 
 Test data for the recognition pipeline:
 
-- `portraits/` - one photo per identity. Used to BUILD the face library
-  (Module 1). Filenames become the identity names: strip the extension
-  and replace underscores with spaces (`Barack_Obama.jpg` -> the name
-  "Barack Obama"). Apply that normalization in your builder or your
-  names will not match the shipped library's.
+- `portraits/` - photos used to BUILD the face library (Module 1).
+  Filenames become the identity names: strip the extension, drop a
+  trailing numeric suffix, replace underscores with spaces - so
+  `Barack_Obama.jpg` AND `Barack_Obama_2.jpg` both label "Barack Obama"
+  (multiple entries per person; nearest wins at match time). Apply that
+  normalization in your builder or your names will not match the shipped
+  library's.
 - `probes/` - photos used to TEST recognition (Modules 1-2): second
   photos of library identities (genuine pairs), multi-face photos, and
   strangers who should stay unmatched. Note: Alex Lacamoire has no
@@ -46,13 +48,13 @@ honest (same-person similarity measured across different photos). If the
 extra photos joined the library, probing with them would test on training
 data and every score would be a meaningless ~0.98.
 
-Matching itself handles multiple entries per person fine - the nearest
-entry wins - and production libraries should carry 2-3 photos per person
-(or a centroid) for pose/lighting robustness. Module 5's `enroll`
-subcommand already supports this (`face:<name>:<n>` keys). The one gap
-left as a stretch exercise: teach the Module 1 library BUILDER a naming
-convention so `Name_2.jpg` maps to "Name" rather than a new person
-called "Name 2".
+Matching handles multiple entries per person - the nearest entry wins -
+and production libraries should carry 2-3 photos per person for
+pose/lighting robustness. Both paths support it: the Module 1 builder
+via the `Name_2.jpg` suffix convention above, and Module 5's `enroll`
+subcommand (`face:<name>:<n>` keys). Just keep genuine-pair probes OUT
+of the library: a probe photo that also became a library entry scores a
+meaningless ~1.0 against itself.
 
 ## Better: use your own
 
