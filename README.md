@@ -150,25 +150,11 @@ curl -L -o models/w600k_mbf.onnx \
 Note: the InsightFace model is distributed for research/educational use;
 review its license before any commercial deployment.
 
-### 6. Verify your setup
+### 6. Run the workshop
 
-```bash
-KEY=$(cat ~/.mo-creds)
-EP=https://api.cache.cell-4-us-west-2-1.prod.a.momentohq.com   # your region's endpoint
-curl -X PUT -H "Authorization: $KEY" --data "hello" \
-  "$EP/cache/<cache>?key=smoke&ttl_seconds=60"        # expect: 204
-curl -H "Authorization: $KEY" "$EP/cache/<cache>?key=smoke"    # expect: 200 with body "hello"
-```
-
-This checks the Momento half only. Once Docker is running you can hand
-the agent the full Module 0 prompt, which also verifies Valkey:
-
-> Verify my setup: Momento PUT/GET smoke test with the key in
-> `~/.mo-creds` against cache `<cache>` at endpoint `<endpoint>`, and
-> confirm my local valkey at port `<port>` has the search module loaded.
-> Never echo the key.
-
-### 7. Run the workshop
+That is the end of the one-time setup; verification is deliberately NOT
+here. It is the workshop's first exercise: Module 0 starts Valkey,
+smoke-tests Momento, and has the agent prove both work.
 
 Open `SYLLABUS.md` and work through the modules in order, pasting each
 prompt into your agent (`PROMPTS.md` collects them all in one sheet).
