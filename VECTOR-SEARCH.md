@@ -27,12 +27,6 @@ the answer comes back "Barack Obama" with a distance that says how close.
 A stranger's face lands far from every cluster, so the nearest match is
 still a bad one, and a threshold rejects it.
 
-"Near" needs a definition. This workshop uses cosine: how much two
-vectors point in the same direction. One trap to know: some systems
-report similarity (1.0 = identical) and others report distance
-(0.0 = identical). Valkey reports distance. Mix them up and everything
-matches, or nothing does.
-
 With 5 people you can afford to compare the query to every stored vector.
 With 50 million you cannot. That is what a vector index is for: HNSW (the
 one Valkey builds in Module 2) keeps shortcut links between neighboring
