@@ -11,38 +11,59 @@ prompt at 2-3 of your writing samples instead.
 
 ## The prompt
 
-> Read my draft at [PATH]. Your job is to attack it, not improve it. Do
-> not rewrite it. Do not compliment it. No praise sandwich: findings
-> only, ranked by how much they would hurt in front of my real audience:
-> [AUDIENCE].
+> Read my draft at [PATH].
 >
-> PASS 1 - DEVIL'S ADVOCATE. First state my core argument in two
-> sentences, at its strongest, so I know you attacked the real thing.
-> Then argue against the piece the way the sharpest skeptic in the room
-> would: the strongest counterargument I ignored; every claim that has
-> no support in the text; every number with no source; where I
-> overclaim; where I hedge so much I say nothing; the weakest paragraph
-> and why; the question I clearly hope nobody asks. Quote the exact
-> passage for every finding. Only attack what the text says; do not
-> invent positions I did not take.
+> Audience: [AUDIENCE]
+> Purpose: [WHAT THIS PIECE SHOULD MAKE THEM UNDERSTAND, BELIEVE, OR DO]
+> Voice reference: [VOICE.md or samples/]
+> Maximum findings per pass: [5-8]
 >
-> PASS 2 - VOICE AND TONE. Compare against my `VOICE.md` [or: my
-> samples in samples/]. Quote every passage that does not sound like me,
-> name what drifted (rhythm, word choice, formality, hedging), and show
-> a one-line rewrite in my voice. Say where the tone mismatches the
-> audience and purpose, even if it matches my usual voice.
+> Your job is to pressure-test the draft, not improve it. Do not rewrite
+> it. Do not compliment it. No praise sandwich. Do not insult me, and do
+> not manufacture objections merely to appear critical. Report only
+> defensible findings grounded in the draft, ranked by how much damage
+> they could do with the real audience. If a pass produces no meaningful
+> finding, say so.
 >
-> PASS 3 - THE MACHINE DETECTOR. Flag everything a reader might smell
-> as AI-written: em-dashes, groups of three, mechanically parallel
-> lists, "It's not just X, it's Y", generic transitions, empty
-> intensifiers, uniform sentence rhythm, a summary ending that repeats
-> the piece, any sentence that could appear unchanged in anyone's essay
-> on this topic. Quote each, say which tell it is. Then name the three
-> sentences MOST likely to make a reader think a model wrote this.
+> For every finding: quote the exact passage; assign a severity
+> (Critical, Major, Minor); state the objection plainly; explain why it
+> matters to this audience and purpose; and distinguish "unsupported in
+> the draft" from "unclear" from "probably false". Do not call anything
+> false unless the evidence establishes it.
 >
-> End with one paragraph, no hedging: if you were arguing against me in
-> front of [AUDIENCE], which single finding would you lead with, and
-> would the piece survive it?
+> PASS 1 - DEVIL'S ADVOCATE. First state the draft's core argument in
+> two sentences at its strongest, including what the audience is being
+> asked to believe or do. That is the argument you must attack. Then
+> respond as the best-informed, fairest, most skeptical person in the
+> room. Find: the strongest counterargument the draft ignores; important
+> claims with no support in the text; numbers that need a source; where
+> it overclaims; where it hedges so heavily it says little; the weakest
+> paragraph and why; the hidden assumptions the conclusion depends on;
+> and the question I most clearly hope nobody asks. Attack only
+> positions the draft actually takes.
+>
+> PASS 2 - VOICE AND TONE. Compare against the voice reference. Flag
+> only drift that conflicts with recurring, well-supported traits in it.
+> For each: quote the passage, name what drifted (rhythm, vocabulary,
+> formality, directness, hedging, humor), cite the voice-reference rule
+> it breaks, and show a one-line rewrite in my voice. The rewrites are
+> diagnostic only; do not revise surrounding text. Separately flag where
+> my normal voice is wrong for THIS audience and purpose.
+>
+> PASS 3 - MACHINE DETECTOR. Flag passages that feel generic,
+> formulaic, or machine-produced in context: em-dashes, forced groups of
+> three, mechanically parallel lists, "It's not just X, it's Y", generic
+> transitions, empty intensifiers, uniform sentence rhythm, an ending
+> that merely summarizes, sentences that could appear unchanged in
+> anyone's essay on this topic. Flag patterns, not any single
+> punctuation mark as proof. For each: quote it, name the signal, say
+> why it reads generic HERE. Then name the three sentences most likely
+> to make a skeptical reader suspect a model wrote this.
+>
+> FINAL VERDICT. One direct paragraph, no hedging: arguing against me in
+> front of [AUDIENCE], which single finding would you lead with, why is
+> it the most damaging, and would the piece survive it as written?
+> Return the critique only; no revised draft.
 
 ## How to read the results
 
@@ -61,10 +82,15 @@ prompt at 2-3 of your writing samples instead.
 
 - "State my argument at its strongest first" prevents the cheap version
   of devil's advocacy: attacking a strawman of your draft.
-- "Ranked by how much it would hurt in front of [AUDIENCE]" turns a
-  generic critique into a rehearsal of the actual room.
-- Quoting exact passages keeps the attack honest and actionable; a
-  critique without quotes is a vibe.
+- "Ranked by damage in front of [AUDIENCE]" plus the Purpose line turns
+  a generic critique into a rehearsal of the actual room.
+- The findings cap and "if a pass finds nothing, say so" stop the agent
+  from inventing nitpicks to look thorough. The anti-manufactured-
+  objection rule stops it from performing harshness.
+- "Unsupported vs unclear vs probably false" keeps the attack honest:
+  an agent must not call your claim false just to sound tough.
+- Quoting exact passages keeps every finding actionable; a critique
+  without quotes is a vibe.
 - "Do not rewrite it" matters: a rewrite lets the agent smuggle its own
   voice back in. You want findings; the fixes stay yours.
 - The final forced verdict ("would it survive?") is the anti-hedge: an
