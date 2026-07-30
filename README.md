@@ -34,6 +34,7 @@ SYLLABUS.md          the workshop: 8 modules + a take-home, with prompts and tim
 PROMPTS.md           all prompts in one copy-paste sheet
 VECTOR-SEARCH.md     a two-minute visual primer on vector search
 VOICE-EXERCISE.md    bonus: teach the agent to write like you, not like an LLM
+DEVILS-ADVOCATE.md   bonus: an adversarial review pass for anything you write
 skills/              agent reference skills (install into your agent, step 4)
   momento-functions/         write, deploy, debug wasm functions
   momento-streaming-origin/  the cache as data store and HLS origin
