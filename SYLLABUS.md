@@ -124,10 +124,16 @@ compare if preprocessing is byte-identical; one code path guarantees it.
 > to end on one portrait before building out the rest."
 
 **Exercise 1b - calibrate your own threshold**
-> **Prompt:** "Build a library from the portraits in `faces/portraits`, then
-> measure impostor cosines (`pairs`) and genuine cosines (probe the
-> second photos in `faces/probes`). Report both ranges and recommend a
-> threshold in the gap."
+> **Prompt:** "Build a library from the portraits in `faces/portraits`,
+> writing it to `faces/faces-library.json` (the canonical path used
+> throughout this workshop). Then measure impostor cosines (`pairs`) and
+> genuine cosines (probe the second photos in `faces/probes`). Report
+> both ranges and recommend a threshold in the gap."
+
+Building overwrites the shipped library at that path. That is fine: it
+is git-tracked, so `git diff faces/faces-library.json` shows exactly how
+your embeddings differ from the shipped ones, and
+`git checkout -- faces/faces-library.json` restores the original.
 
 *Reference numbers: impostors <= 0.16, genuine 0.35-0.93, threshold 0.30.
 Do not copy these - measure yours.*
@@ -175,7 +181,7 @@ your version.
 
 **Exercise 2a - load the index**
 > **Prompt:** "Write a `libbuild index` subcommand that loads
-> `faces-library.json` into my local valkey as an HNSW COSINE index
+> `faces/faces-library.json` into my local valkey as an HNSW COSINE index
 > (FT.CREATE, one HSET per entry with the vector packed as little-endian
 > f32 plus a name field). Then verify with an FT.SEARCH KNN query using
 > one of the library vectors - it must return its own name at distance

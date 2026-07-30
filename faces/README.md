@@ -18,10 +18,12 @@ Test data for the recognition pipeline:
   portraits (512-D vectors from the w600k_mbf model, L2-normalized,
   ~31 KB). Schema: a bare JSON array (no wrapper object) of entries
   `{"name": "First Last", "e": [512 floats]}` - names use spaces, per
-  the filename normalization above. Two uses: feed it straight to
-  `libbuild index` (Module 2) to load Valkey without finishing
-  Module 1's library build, or diff it against your own `build` output
-  to verify your pipeline. Caveat: embeddings only compare if your
+  the filename normalization above. This is the CANONICAL library
+  path for the whole workshop: Module 1's `build` writes here
+  (overwriting this shipped copy; it is git-tracked, so
+  `git diff` compares yours to ours and `git checkout` restores it),
+  and Module 2's `index` reads from here. Skipping Module 1 works
+  because this shipped copy is already in place. Caveat: embeddings only compare if your
   preprocessing matches the skill's recipe exactly (RGB, +25% square
   crop, 112x112 Triangle resize, (x-127.5)/127.5). If your genuine-pair
   scores against this library look mysteriously low, your preprocessing

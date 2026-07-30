@@ -184,8 +184,8 @@ streaming module and the reflection wrap-up: ~2 hours. It fits a single
 2-hour block; the timings assume the skills are registered and the setup
 steps above are done before the clock starts.
 
-**Short on time (1 hour)?** Do 0-2 (the shipped `faces/` and
-`faces-library.json` let you skip photo hunting and even library
+**Short on time (1 hour)?** Do 0-2 (the shipped `faces/` portraits and
+`faces/faces-library.json` let you skip photo hunting and even library
 building). Watch 3-4 as a demo; take 5-7 and the take-home home.
 
 ## Notes

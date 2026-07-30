@@ -44,15 +44,16 @@ Optional (after photographing your crew into faces/, see Exercise 0b):
 > embedder. Verify it works end to end on one portrait before building
 > out the rest.
 
-> Build a library from the portraits in `faces/portraits`, then measure
-> impostor cosines (`pairs`) and genuine cosines (probe the second photos
-> in `faces/probes`). Report both ranges and recommend a threshold in the
-> gap.
+> Build a library from the portraits in `faces/portraits`, writing it to
+> `faces/faces-library.json` (the canonical path used throughout this
+> workshop). Then measure impostor cosines (`pairs`) and genuine cosines
+> (probe the second photos in `faces/probes`). Report both ranges and
+> recommend a threshold in the gap.
 
 ## Module 2 - Valkey as the embeddings index
 
-> Write a `libbuild index` subcommand that loads `faces-library.json`
-> into my local valkey as an HNSW COSINE index (FT.CREATE, one HSET per
+> Write a `libbuild index` subcommand that loads
+> `faces/faces-library.json` into my local valkey as an HNSW COSINE index (FT.CREATE, one HSET per
 > entry with the vector packed as little-endian f32 plus a name field).
 > Then verify with an FT.SEARCH KNN query using one of the library
 > vectors - it must return its own name at distance near zero.
