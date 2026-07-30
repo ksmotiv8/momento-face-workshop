@@ -47,6 +47,17 @@ faces/               training portraits and test probes (see faces/README.md)
 
 ## Step-by-step setup
 
+### 0. Clone this repo
+
+Everything that follows happens inside your clone: the faces, the
+models directory you will create, the skills, and the workspace your
+agent builds.
+
+```bash
+git clone https://github.com/ksmotiv8/momento-face-workshop.git
+cd momento-face-workshop
+```
+
 ### 1. Create a Momento account
 
 1. Sign up at https://console.gomomento.com (email, Google, or GitHub).
