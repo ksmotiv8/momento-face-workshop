@@ -244,6 +244,9 @@ Symptom map:
   `aresample=async`, or ignore if ticks are tiny and playback is clean.
 - Players glitch on segments shipped by a directory-watching uploader:
   partial segments; add `-hls_flags +temp_file`.
-- Multi-output command ignores `-t` and never stops: `-t` after the last
-  output limits only THAT output. Put `-t` before each output, or use it
-  as an input option before `-i`.
+- Command ignores `-t` and never stops: two causes. (1) `-t` after the
+  last output is silently ignored (the "Trailing option(s)" warning hides
+  below -loglevel error); as an output option it must precede each
+  output. (2) `-loop 1` image inputs are INFINITE and keep ffmpeg alive
+  even after the main input's `-t` expires. Reliable forms: `-t` on
+  every output, or `-t` on every input including the looped ones.

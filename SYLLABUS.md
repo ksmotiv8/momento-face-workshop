@@ -467,7 +467,7 @@ wasm, library in the cache, a shared service any client can call.
 | Sidecar reports 0 faces every frame | relative model paths resolved from the wrong cwd |
 | ffmpeg "Failed to resolve hostname" (curl works) | static build resolver; use the curl-loop fallback |
 | ffmpeg exits at start | missing `-y`, prompting to overwrite |
-| Stream ignores `-t` and never stops | with multiple outputs, `-t` after the last output limits only that output; put `-t` before each output |
+| Stream ignores `-t` and never stops | trailing `-t` is ignored, and `-loop 1` image inputs are infinite; put `-t` on every output (or on every input, looped ones included) |
 | Detector panic | `min_face_size` < 20 |
 | `Argument list too long` on function deploy (take-home) | base64 inline in curl; use `--data-binary @file` |
 | Zero-arg handler will not compile (take-home) | `invoke!` handlers must take the payload: `fn h(_p: Data)` |
