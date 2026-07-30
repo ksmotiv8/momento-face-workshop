@@ -36,6 +36,7 @@ VECTOR-SEARCH.md     a two-minute visual primer on vector search
 VOICE-EXERCISE.md    bonus: teach the agent to write like you, not like an LLM
 DEVILS-ADVOCATE.md   bonus: an adversarial review pass for anything you write
 LOOPS-WORKFLOWS-GOALS.md  bonus: Claude loops and workflows, Codex goals - which one, when
+DUAL-REVIEW.md       bonus: Claude Code runs Codex as an independent second reviewer
 skills/              agent reference skills (install into your agent, step 4)
   momento-functions/         write, deploy, debug wasm functions
   momento-streaming-origin/  the cache as data store and HLS origin
