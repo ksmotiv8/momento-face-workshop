@@ -372,7 +372,9 @@ result JSON to a cache key (with a TTL) so other consumers can poll it.
 cargo build --release
 # Write the deploy body to a FILE: this wasm is ~26 MB, and inlining the
 # base64 into curl argv hits ARG_MAX ("Argument list too long").
-base64 -w0 target/wasm32-wasip2/release/face_detect.wasm > /tmp/fn.b64
+base64 -w0 target/wasm32-wasip2/release/face_detect.wasm > /tmp/fn.b64   # Linux
+# macOS base64 has no -w; its output is already unwrapped:
+#   base64 -i target/wasm32-wasip2/release/face_detect.wasm > /tmp/fn.b64
 printf '{"inline_wasm":"' > /tmp/fn.json; cat /tmp/fn.b64 >> /tmp/fn.json; printf '"}' >> /tmp/fn.json
 curl -X PUT "https://<endpoint>/functions/manage/<cache>/face-detect" \
   -H "authorization: $KEY" -H "Content-Type: application/json" \

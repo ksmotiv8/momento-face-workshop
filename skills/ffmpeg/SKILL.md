@@ -201,17 +201,19 @@ Continuous frame tap (feed an analysis service while streaming):
   decode cost scales with pixels, not JPEG bytes).
 - `image2 -update 1 -atomic_writing 1` rewrites ONE file atomically
   (temp + rename); readers never see a partial JPEG.
-- The file's mtime IS the frame's capture time (rename preserves it). Read
-  it with sub-second precision (`stat -c %.Y`, GNU coreutils) and forward
-  it (e.g. an `x-frame-ts` header) so consumers can time-align results
-  with the video.
+- The file's mtime IS the frame's capture time (rename preserves it).
+  Read it with sub-second precision portably (GNU `stat -c %.Y` exists,
+  macOS stat does not; Python works everywhere):
+  `python3 -c 'import os,sys;print(os.stat(sys.argv[1]).st_mtime_ns//1_000_000)' f.jpg`
+  and forward it (e.g. an `x-frame-ts` header) so consumers can
+  time-align results with the video.
 - Ship frames with a sidecar loop polling mtime at 2x the tap rate:
 
 ```bash
+mt(){ python3 -c 'import os,sys;print(os.stat(sys.argv[1]).st_mtime_ns//1_000_000)' "$1" 2>/dev/null; }
 while sleep 0.25; do
-  m=$(stat -c %.Y /tmp/latest.jpg) || continue
-  [ "$m" = "$last" ] && continue; last=$m
-  ms=$(awk -v t="$m" 'BEGIN{printf "%.0f", t*1000}')
+  ms=$(mt /tmp/latest.jpg) || continue
+  [ "$ms" = "$last" ] && continue; last=$ms
   curl -s -X POST -H "x-frame-ts: $ms" --data-binary @/tmp/latest.jpg "$SINK_URL"
 done
 ```

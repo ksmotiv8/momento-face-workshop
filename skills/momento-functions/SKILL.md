@@ -211,7 +211,9 @@ means the host from this table.
 cargo build --release
 # Write the deploy body to a FILE. Inlining tens of MB of base64 into the
 # curl argv hits the OS ARG_MAX limit ("Argument list too long").
-base64 -w0 target/wasm32-wasip2/release/myfn.wasm > /tmp/fn.b64
+base64 -w0 target/wasm32-wasip2/release/myfn.wasm > /tmp/fn.b64   # Linux
+# macOS base64 has no -w; its output is already unwrapped:
+#   base64 -i target/wasm32-wasip2/release/myfn.wasm > /tmp/fn.b64
 printf '{"inline_wasm":"' > /tmp/fn.json
 cat /tmp/fn.b64 >> /tmp/fn.json
 printf '"}' >> /tmp/fn.json
